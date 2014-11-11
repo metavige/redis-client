@@ -1,19 +1,19 @@
-var frisby = require('frisby'),
-    server = require('../app').server;
+// var frisby = require('frisby'),
+// server = require('../app').server;
 
-frisby.create('Call redis post')
-    .post(
-        'http://localhost:3000/redis', {
-            id: 'testresid',
-            port: 6380
-        }
-    )
-    .expectStatus(200)
-    .expectBodyContains('failed')
-    .after(function() {
-        server.close();
-    })
-    .toss();
+// frisby.create('Call redis post')
+//     .post(
+//         'http://localhost:3000/redis', {
+//             id: 'testresid',
+//             port: 6380
+//         }
+//     )
+//     .expectStatus(200)
+//     .expectBodyContains('receive ok!')
+//     .after(function() {
+//         server.close();
+//     })
+//     .toss();
 
 // .expectHeaderContains('content-type', 'application/json')
 // .expectJSON('0', {

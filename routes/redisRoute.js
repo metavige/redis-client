@@ -3,9 +3,10 @@ var express = require('express'),
     util = require('util'),
     exec = require('child_process').exec,
     redisClient = require('redis'),
+    http = require('http'),
     router = express.Router();
 
-// var redisProcessor = require('../lib/redis');
+var redisProcessor = require('../lib/redis');
 
 /* define redis api */
 router.route('/')
@@ -27,7 +28,10 @@ router.route('/')
          */
         console.log(req.body);
 
-        var command = util.format('redis-server --port %s &', req.body.port);
+        var command = util.format(
+            'redis-server --port %s --maxmemory %nmb &',
+            req.body.port);
+
         exec(command, function(error, stdout, stderr) {
             console.log('stdout: ' + stdout);
             console.log('stderr: ' + stderr);
@@ -35,10 +39,10 @@ router.route('/')
                 console.log('exec error: ' + error);
             }
 
-            res.send((error !== null) ? 'failed' : 'ok');
+            // redisProcessor.updateStatus();
         });
 
-        // res.send('respond post with a resource');
+        res.send('receive ok!');
         // next();
     });
 
