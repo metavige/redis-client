@@ -1,10 +1,18 @@
+#!/usr/bin/env node
+
 var express = require('express'),
-    wines = require('./routes/redis');
+    redisRouter = require('./routes/redisRoute');
+var bodyParser = require('body-parser');
 
 var app = express();
 
-app.post('/redis', wines.create);
+app.use(bodyParser.urlencoded({
+    extended: false
+}));
+app.use(bodyParser.json());
+
+app.use('/redis', redisRouter);
 // app.get('/wines/:id', wines.findById);
 
-app.listen(3000);
+exports.server = app.listen(3000);
 console.log('Listening on port 3000...');
