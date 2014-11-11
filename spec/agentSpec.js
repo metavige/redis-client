@@ -4,11 +4,12 @@ var frisby = require('frisby'),
 frisby.create('Call redis post')
     .post(
         'http://localhost:3000/redis', {
-            data: 123
+            id: 'testresid',
+            port: 6380
         }
     )
     .expectStatus(200)
-    .expectBodyContains('respond post with a resource')
+    .expectBodyContains('failed')
     .after(function() {
         server.close();
     })

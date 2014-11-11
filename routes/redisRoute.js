@@ -25,12 +25,20 @@ router.route('/')
             3. usr child_process.exec to execute command (async)
             4. return command execute status, ok or fail
          */
-
-
         console.log(req.body);
-        exec("echo \"Data: " + req.body.data + "\"");
 
-        res.send('respond post with a resource');
+        var command = util.format('redis-server --port %s &', req.body.port);
+        exec(command, function(error, stdout, stderr) {
+            console.log('stdout: ' + stdout);
+            console.log('stderr: ' + stderr);
+            if (error !== null) {
+                console.log('exec error: ' + error);
+            }
+
+            res.send((error !== null) ? 'failed' : 'ok');
+        });
+
+        // res.send('respond post with a resource');
         // next();
     });
 
