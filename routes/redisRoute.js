@@ -6,11 +6,11 @@ var express = require('express'),
     http = require('http'),
     router = express.Router();
 
-var redisProcessor = require('../lib/redis');
+var RedisAdapter = require('../lib/redis');
 
 /* define redis api */
 router.route('/')
-    .post(function(req, res, next) {
+    .post(function (req, res, next) {
         /**
             Post Body = {
                 id: 'resourceId',
@@ -32,7 +32,7 @@ router.route('/')
             'redis-server --port %s --maxmemory %nmb &',
             req.body.port);
 
-        exec(command, function(error, stdout, stderr) {
+        exec(command, function (error, stdout, stderr) {
             console.log('stdout: ' + stdout);
             console.log('stderr: ' + stderr);
             if (error !== null) {
