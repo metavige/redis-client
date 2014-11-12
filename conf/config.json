@@ -1,0 +1,8 @@
+
+/**
+    agent configuration
+ */
+{
+    'id': '' // register from resource provider, for vm agent
+    ,
+}
