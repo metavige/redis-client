@@ -1,0 +1,8 @@
+
+/**
+    agent configuration
+ */
+{
+    'apiRoot': 'http://icu-cwg8nyg4.quanta-camp.com/RedisContainer/',
+    'type': 'redis'
+};

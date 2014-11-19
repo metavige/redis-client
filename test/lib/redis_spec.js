@@ -1,13 +1,13 @@
 var chaiExpect = require('chai').expect;
 var expect = require('expect.js');
 var exec = require('child_process').exec;
-var RedisAdapter = require('../../lib/redis');
+var RedisAdapter = require('../../app/lib/redis');
 
 describe('Redis Adapter', function () {
-    var redisProcess = null;
+    var redisAdapter = null;
 
     beforeEach(function () {
-        redisProcess = new RedisAdapter();
+        redisAdapter = new RedisAdapter();
     });
 
     /**
@@ -16,14 +16,14 @@ describe('Redis Adapter', function () {
     describe('Config', function () {
 
         it('預設設定', function () {
-            chaiExpect(redisProcess)
+            chaiExpect(redisAdapter)
                 .to.have.a.property('config');
         });
 
         it('api default host config', function () {
-            chaiExpect(redisProcess.config.api)
+            chaiExpect(redisAdapter.config.api)
                 .to.have.a.property('host', 'http://127.0.0.1');
-            chaiExpect(redisProcess.config.api)
+            chaiExpect(redisAdapter.config.api)
                 .to.have.a.property('port', 80);
         });
 
@@ -46,20 +46,10 @@ describe('Redis Adapter', function () {
     /**
      * 測試 Redis Command
      */
-    describe("Command Test", function () {
-
-
-        afterEach(function () {
-            // 移除用 RedisAdapter 建立出來的 redis process, 找出 pid 然後刪除
-            // 確保其他測試不會有問題
-            exec('kill $(ps -A -f | grep redis-server |  grep "*:6380" | awk \'{print $2}\')',
-                function (error, stdout, stderr) {
-                    console.log('remove redis-server :', error, stdout, stderr);
-                });
-        });
+    describe("MakeCommand Test", function () {
 
         it('預設產生的參數應該要是合乎 redis-server 的規範', function () {
-            var command = redisProcess.makeCommand({
+            var command = redisAdapter.makeCommand({
                 port: 6379,
                 memory: 100
             });
@@ -100,7 +90,7 @@ describe('Redis Adapter', function () {
                     port: 6379
                 };
 
-                redisProcess.check(options, function (result) {
+                redisAdapter.check(options, function (result) {
 
                     console.log('client test result: ', result);
                     chaiExpect(result).equals(true);
@@ -123,7 +113,7 @@ describe('Redis Adapter', function () {
                     port: 6380
                 };
 
-                redisProcess.check(options, function (result) {
+                redisAdapter.check(options, function (result) {
 
                     console.log('client test result: ', result);
                     chaiExpect(result).equals(false);
