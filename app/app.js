@@ -3,9 +3,10 @@
 var express = require('express'),
     bodyParser = require('body-parser');
 
-var redisRouter = require('./routes/redisRoute');
-var config = require('./lib/config');
-var nebula = require('./lib/nebula');
+var redisRouter = require(__dirname + '/routes/redisRoute');
+
+// var nebula = require(__dirname + '/lib/nebula');
+var config = require(__dirname + '/lib/config');
 
 var app = express();
 
@@ -21,5 +22,5 @@ exports.server = app.listen(3000);
 console.log('Listening on port 3000...');
 
 // Start config init, register container
-config.init();
-nebula.init();
+// config.init();
+// nebula.init();

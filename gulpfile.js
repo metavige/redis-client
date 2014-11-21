@@ -12,8 +12,8 @@ var fs = require('fs');
 // 環境變數
 var env = 'prod'; // dev||prod
 
-var live = livereload();
-livereload.listen();
+// var live = livereload();
+// livereload.listen();
 
 // 路徑變數
 var paths = {
@@ -26,7 +26,7 @@ var paths = {
 /**
  *  打包 js,
  */
-gulp.task('bundle-js', function () {
+gulp.task('bundle-js', function() {
 
     // console.log( '\nbundle-js 跑' );
 
@@ -57,7 +57,7 @@ gulp.task('bundle-js', function () {
 /**
  * 監控 app/ 下所有 js, jsx, html, css 變化就重新編譯
  */
-gulp.task('watch', function () {
+gulp.task('watch', function() {
     // console.log( 'watch 跑' );
 
     gulp.watch(paths.src, ['clean', 'bundle-js', 'refresh']);
@@ -68,24 +68,25 @@ gulp.task('watch', function () {
 /**
  * livereload refresh
  */
-gulp.task('refresh', function () {
+gulp.task('refresh', function() {
     // console.log( '\nlivereload > refresh\n' );
-    setTimeout(function () {
+    setTimeout(function() {
         live.changed('');
     }, 500);
 });
 
-gulp.task('clean', function () {
+gulp.task('clean', function() {
     return gulp.src(paths.destDir + '/**/*', {
             read: false
         })
         .pipe(clean());
 });
 
-gulp.task('test', function () {
+gulp.task('test', function() {
     return gulp.src([paths.testScrips])
         .pipe(mocha())
-        .on('error', function (err) {
+        .on('error', function(err) {
+            console.log('======');
             console.log('[測試錯誤]', err);
         });
 });

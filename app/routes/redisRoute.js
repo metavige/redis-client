@@ -4,16 +4,17 @@ var express = require('express'),
     exec = require('child_process').exec,
     redisClient = require('redis'),
     http = require('http'),
-    router = express.Router();
+    router = express.Router(),
+    _ = require('underscore');
 
-var RedisAdapter = require('../lib/redis');
+var redisAdapter = require('../lib/redis');
 
 /* define redis api */
 router.route('/')
-    .post(function (req, res, next) {
+    .post(function(req, res, next) {
         /**
             Post Body = {
-                id: 'resourceId',
+                id: 'containerProcessId',
                 port: 'redis port',
                 pwd: 'auth password',
                 mem: 'allocate memory size'
@@ -26,23 +27,32 @@ router.route('/')
             3. usr child_process.exec to execute command (async)
             4. return command execute status, ok or fail
          */
-        console.log(req.body);
+        // console.log(req.body);
 
-        var command = util.format(
-            'redis-server --port %s --maxmemory %nmb &',
-            req.body.port);
+        // var command = util.format(
+        //     'redis-server --port %s --maxmemory %nmb &',
+        //     req.body.port);
+        //
+        // exec(command, function(error, stdout, stderr) {
+        //     console.log('stdout: ' + stdout);
+        //     console.log('stderr: ' + stderr);
+        //     if (error !== null) {
+        //         console.log('exec error: ' + error);
+        //     }
+        //
+        //     // redisProcessor.updateStatus();
+        // });
+        //
+        // res.send('receive ok!');
+        // next();
+        var redisSettings = req.body;
 
-        exec(command, function (error, stdout, stderr) {
-            console.log('stdout: ' + stdout);
-            console.log('stderr: ' + stderr);
-            if (error !== null) {
-                console.log('exec error: ' + error);
-            }
+        redisAdapter.create(req.body);
+        // redisSettings.port,
+        // redisSettings.mem,
+        // redisSettings.pwd);
 
-            // redisProcessor.updateStatus();
-        });
-
-        res.send('receive ok!');
+        res.status(200).send(redisSettings);
         // next();
     });
 
