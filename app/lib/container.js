@@ -47,6 +47,10 @@ redisContainerApi.registerContainer = function() {
         });
 };
 
+/**
+ * Update Redis Info
+ * @param {Boolean} redisInfo [description]
+ */
 redisContainerApi.sendRedisInfo = function(redisInfo) {
     /**
      * 網址組合成 api/containers/{containerId}/process/{processId}
@@ -68,6 +72,7 @@ redisContainerApi.sendRedisInfo = function(redisInfo) {
                     // console.log(res.body);
                 } catch (ex) {
                     console.error(ex);
+                    // TODO: 
                 }
             });
     }

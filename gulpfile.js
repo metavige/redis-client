@@ -60,20 +60,20 @@ gulp.task('bundle-js', function() {
 gulp.task('watch', function() {
     // console.log( 'watch 跑' );
 
-    gulp.watch(paths.src, ['clean', 'bundle-js', 'refresh']);
+    gulp.watch(paths.src, ['clean', 'bundle-js']);
 
     //gulp.watch(['test/**', 'app/lib/**'], ['test']);
 });
 
-/**
- * livereload refresh
- */
-gulp.task('refresh', function() {
-    // console.log( '\nlivereload > refresh\n' );
-    setTimeout(function() {
-        live.changed('');
-    }, 500);
-});
+// /**
+//  * livereload refresh
+//  */
+// gulp.task('refresh', function() {
+//     // console.log( '\nlivereload > refresh\n' );
+//     setTimeout(function() {
+//         live.changed('');
+//     }, 500);
+// });
 
 gulp.task('clean', function() {
     return gulp.src(paths.destDir + '/**/*', {

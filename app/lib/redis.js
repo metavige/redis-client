@@ -51,6 +51,8 @@ redisAdapter.create = function(options) {
         if (error !== null) {
             console.log('exec error: ' + error);
             // error.call(null, error);
+            //
+            // TODO: 錯誤處理！？
         } else {
             // TODO: 之後準備建立完畢之後，呼叫 containerApi 更新狀態
 
@@ -70,7 +72,6 @@ redisAdapter.infoUpdate = function(redisConfig) {
     var command = util.format(commands.info, redisConfig.port, redisConfig.pwd);
     console.log('get redis info: ', command);
 
-
     exec(command, function(error, stdout, stderr) {
 
         var updatedStatus = {
@@ -86,21 +87,10 @@ redisAdapter.infoUpdate = function(redisConfig) {
             // TODO: Error Call
             containerApi.sendRedisInfo(updatedStatus);
         } else {
+            var redisInfo = redisInfo.parse(stdout);
+            updatedStatus._info = redisInfo;
 
-            var redisInfoData = '';
-            stdout.on('data', function(chunk) {
-                redisInfoData += chunk;
-
-                console.log('stdout data: ', chunk);
-            });
-            stdout.on('end', function() {
-                console.log('stdout end');
-                var redisInfo = redisInfo.parse(
-                    redisInfoData);
-                updatedStatus._info = redisInfo;
-
-                containerApi.sendRedisInfo(updatedStatus);
-            });
+            containerApi.sendRedisInfo(updatedStatus);
         }
         // callback(error === null);
     });

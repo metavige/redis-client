@@ -7,6 +7,7 @@ var express = require('express'),
     router = express.Router(),
     _ = require('underscore');
 
+// Load redisAdapter
 var redisAdapter = require(__dirname + '/../lib/redis');
 
 /* define redis api */
