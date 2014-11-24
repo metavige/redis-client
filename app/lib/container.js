@@ -68,11 +68,11 @@ redisContainerApi.sendRedisInfo = function(redisInfo) {
                 console.log(res);
                 try {
                     console.log("call sendRedisInfo:", res.getCode());
-                    console.log('response:', res.getBody());
+                    // console.log('response:', res.getBody());
                     // console.log(res.body);
                 } catch (ex) {
-                    console.error(ex);
-                    // TODO: 
+                    console.error('sendRedisInfo: ', ex);
+                    // TODO:
                 }
             });
     }

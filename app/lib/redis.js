@@ -64,8 +64,8 @@ redisAdapter.create = function(options) {
 };
 
 /**
- * 取得 Redis Instance Info
- * @return {[type]} [description]
+ * 更新 Redis Instance Info
+ * @param {Boolean} redisConfig [description]
  */
 redisAdapter.infoUpdate = function(redisConfig) {
 
@@ -75,7 +75,7 @@ redisAdapter.infoUpdate = function(redisConfig) {
     exec(command, function(error, stdout, stderr) {
 
         var updatedStatus = {
-            pid: redisConfig.id
+            id: redisConfig.id
         };
 
         //console.log(stdout);
@@ -87,8 +87,8 @@ redisAdapter.infoUpdate = function(redisConfig) {
             // TODO: Error Call
             containerApi.sendRedisInfo(updatedStatus);
         } else {
-            var redisInfo = redisInfo.parse(stdout);
-            updatedStatus._info = redisInfo;
+            var redisInfoData = redisInfo.parse(stdout);
+            updatedStatus.info = redisInfoData;
 
             containerApi.sendRedisInfo(updatedStatus);
         }
