@@ -31,6 +31,32 @@ router.route('/')
 
         var redisSettings = req.body;
 
+        // Check parameter
+        if (_.isUndefined(redisSettings.id)) {
+            res.status(400).send({
+                message: 'Bad arguments: id is undefined'
+            });
+            return;
+        }
+        if (_.isNaN(redisSettings.port)) {
+            res.status(400).send({
+                message: 'Bad arguments: port is NaN'
+            });
+            return;
+        }
+        if (_.isNaN(redisSettings.mem)) {
+            res.status(400).send({
+                message: 'Bad arguments: mem is NaN'
+            });
+            return;
+        }
+        if (_.isUndefined(redisSettings.pwd)) {
+            res.status(400).send({
+                message: 'Bad arguments: pwd is undefined'
+            });
+            return;
+        }
+
         redisAdapter.create(req.body);
 
         res.status(200).send(redisSettings);
