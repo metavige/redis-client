@@ -70,26 +70,37 @@ redisAdapter.infoUpdate = function(redisConfig) {
     var command = util.format(commands.info, redisConfig.port, redisConfig.pwd);
     console.log('get redis info: ', command);
 
+
     exec(command, function(error, stdout, stderr) {
+
+        var updatedStatus = {
+            pid: redisConfig.id
+        };
+
         //console.log(stdout);
         if (error !== null) {
             console.log('info exeute error', error, stderr);
             // errorBack.call(null);
+            updatedStatus.error = error;
 
             // TODO: Error Call
+            containerApi.sendRedisInfo(updatedStatus);
         } else {
-            var infoData = {
-                id: redisConfig.id
-            };
 
-            if (stdout.toString().indexOf('Connection refused') < 0) {
-                // 抓到了 Redis info 的資料
-                infoData = _.extend(infoData, redisInfo.parse(
-                    stdout));
-                // TODO: Add pid?
-            }
+            var redisInfoData = '';
+            stdout.on('data', function(chunk) {
+                redisInfoData += chunk;
 
-            containerApi.sendRedisInfo(infoData);
+                console.log('stdout data: ', chunk);
+            });
+            stdout.on('end', function() {
+                console.log('stdout end');
+                var redisInfo = redisInfo.parse(
+                    redisInfoData);
+                updatedStatus._info = redisInfo;
+
+                containerApi.sendRedisInfo(updatedStatus);
+            });
         }
         // callback(error === null);
     });
