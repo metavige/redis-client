@@ -15,10 +15,10 @@ xdescribe('Redis Adapter', function() {
         });
 
         it('api default host config', function() {
-            chaiExpect(redisAdapter.config.api)
+            expect(redisAdapter.config.api)
                 .to.have.a.property('host',
                     'http://127.0.0.1');
-            chaiExpect(redisAdapter.config.api)
+            expect(redisAdapter.config.api)
                 .to.have.a.property('port', 80);
         });
 
@@ -30,10 +30,10 @@ xdescribe('Redis Adapter', function() {
         });
 
         it('set config from constructor arguments', function() {
-            chaiExpect(otherRedisAdapter.config.api)
+            expect(otherRedisAdapter.config.api)
                 .to.have.a.property('host',
                     'http://localhost');
-            chaiExpect(otherRedisAdapter.config.api)
+            expect(otherRedisAdapter.config.api)
                 .to.have.a.property('port', 123);
         });
 
