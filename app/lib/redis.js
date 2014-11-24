@@ -35,6 +35,8 @@ var redisAdapter = module.exports = {};
 redisAdapter.create = function(options) {
     options = options || {};
 
+    console.log('show create options: ', options);
+
     var command = util.format(commands.create,
         options.port, options.mem, options.pwd);
     console.log('prepare create command: ', command);
@@ -72,7 +74,9 @@ redisAdapter.infoUpdate = function(redisConfig) {
         //console.log(stdout);
         if (error !== null) {
             console.log('info exeute error', error, stderr);
-            errorBack.call(null);
+            // errorBack.call(null);
+
+            // TODO: Error Call
         } else {
             var infoData = {
                 id: redisConfig.id
