@@ -7,8 +7,9 @@
 npm install
 
 AGENT_DIR=/usr/local/lib/redisAgent
+
 mkdir -p "$AGENT_DIR/conf"
-mkdir -p "AGENT_DIR/logs"
+mkdir -p "$AGENT_DIR/logs"
 
 if [ ! -f "$AGENT_DIR/conf/config.json" ]; then
   echo "{ \"apiRoot\": \"http://host/RedisContainer/\", \"type\": \"redis\" }" > "$AGENT_DIR/conf/config.json"
