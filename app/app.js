@@ -1,23 +1,19 @@
 #!/usr/bin/env node
-
 var express = require('express'),
     bodyParser = require('body-parser');
 
 var redisRouter = require(__dirname + '/routes/redisRoute');
-
-// var nebula = require(__dirname + '/lib/nebula');
 var config = require(__dirname + '/lib/config');
-
 var app = express();
 
-app.use(bodyParser.urlencoded({
-    extended: false
-}));
+// ==========
+// start setting expressjs
+// ==========
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
 app.use('/redis', redisRouter);
-// app.get('/wines/:id', wines.findById);
 
+// app.get('/wines/:id', wines.findById);
 exports.server = app.listen(3000);
 console.log('Listening on port 3000...');
 
