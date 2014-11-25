@@ -1,6 +1,5 @@
 install:
-	npm install
-	mkdir -p /usr/local/lib/redisAgent/logs
-	
+	bin/agent-init
+
 run:
 	npm start
