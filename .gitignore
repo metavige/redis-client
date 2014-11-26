@@ -1,4 +1,6 @@
 node_modules
-build
 logs
+build
+conf/instance.json
+conf/config.json
 conf

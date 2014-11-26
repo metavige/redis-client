@@ -6,18 +6,28 @@
 
  */
 
-var exec = require('child_process').exec,
+var path = require('path'),
+    exec = require('child_process').exec,
     util = require('util'),
-    _ = require("underscore");
+    _ = require("underscore"),
+    redisInfo = require('redis-info');
 
-var containerApi = require('./container');
-var redisInfo = require('redis-info');
+var containerApi = require(path.join(__dirname, './container'));
+var logger = require(path.join(__dirname, './logger'));
 
 // Define bash command
 var commands = {
-    create: 'redis-server --port %d --maxmemory %dmb --requirepass %s --daemonize yes',
-    info: 'redis-cli -p %d -a %s info',
-    pid: 'ps -A -f | grep redis-server |  grep "*:%d" | awk \'{print $2}\''
+    redis: {
+        create: 'redis-server --port %d --maxmemory %dmb --requirepass %s --daemonize yes',
+        info: 'redis-cli -p %d -a %s info',
+        pid: 'ps -A -f | grep redis-server |  grep "*:%d" | awk \'{print $2}\'',
+    },
+    sentinel: {
+        start: path.join(__dirname, 'bin/start-sentinel') + ' %s'
+    },
+    proxy: {
+        start: path.join(__dirname, 'bin/start-twemproxy') + ' %s %s %s'
+    }
 };
 
 // var redis = require('redis');
@@ -35,21 +45,19 @@ var redisAdapter = module.exports = {};
 redisAdapter.create = function(options) {
     options = options || {};
 
-    console.log('show create options: ', options);
+    logger.debug('show create options: ', options);
 
-    var command = util.format(commands.create,
+    var command = util.format(commands.redis.create,
         options.port, options.mem, options.pwd);
-    console.log('prepare create command: ', command);
+    logger.debug('prepare create command: ', command);
 
     // TODO: Check instance is running???
-
-
     exec(command, function(error, stdout, stderr) {
-        console.log('stdout: ' + stdout);
-        console.log('stderr: ' + stderr);
+        logger.debug('stdout: ' + stdout);
+        logger.debug('stderr: ' + stderr);
 
         if (error !== null) {
-            console.log('exec error: ' + error);
+            logger.error('exec error: ' + error);
             // error.call(null, error);
             //
             // TODO: 錯誤處理！？
@@ -69,8 +77,8 @@ redisAdapter.create = function(options) {
  */
 redisAdapter.infoUpdate = function(redisConfig) {
 
-    var command = util.format(commands.info, redisConfig.port, redisConfig.pwd);
-    console.log('get redis info: ', command);
+    var command = util.format(commands.redis.info, redisConfig.port, redisConfig.pwd);
+    logger.debug('get redis info: ', command);
 
     exec(command, function(error, stdout, stderr) {
 
@@ -78,9 +86,9 @@ redisAdapter.infoUpdate = function(redisConfig) {
             id: redisConfig.id
         };
 
-        //console.log(stdout);
+        //logger.debug(stdout);
         if (error !== null) {
-            console.log('info exeute error', error, stderr);
+            logger.error('info exeute error', error, stderr);
             // errorBack.call(null);
             updatedStatus.error = error;
 

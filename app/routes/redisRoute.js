@@ -1,14 +1,12 @@
 // var redis = require('redis');
 var express = require('express'),
-    util = require('util'),
-    exec = require('child_process').exec,
-    redisClient = require('redis'),
-    http = require('http'),
+    path = require('path'),
     router = express.Router(),
     _ = require('underscore');
 
 // Load redisAdapter
-var redisAdapter = require(__dirname + '/../lib/redis');
+var redisAdapter = require(path.join(__dirname, '/../lib/redis'));
+var logger = require(path.join(__dirname, '../lib/logger'));
 
 /* define redis api */
 router.route('/')
@@ -28,7 +26,7 @@ router.route('/')
             3. usr child_process.exec to execute command (async)
             4. return command execute status, ok or fail
          */
-        console.log('Redis Api Request Body: ', req.body);
+        logger.debug('Redis Api Request Body: ', req.body);
 
         var redisSettings = req.body;
 

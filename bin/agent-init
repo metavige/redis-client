@@ -8,7 +8,7 @@ npm install
 
 AGENT_DIR=/usr/local/lib/redisAgent
 
-mkdir -p "$AGENT_DIR/conf"
+# mkdir -p "$AGENT_DIR/conf"
 mkdir -p "$AGENT_DIR/logs"
 
 if [ ! -f "$AGENT_DIR/conf/config.json" ]; then
@@ -18,3 +18,5 @@ fi
 if [ ! -f "$AGENT_DIR/conf/instance.json" ]; then
   echo "[]" > "$AGENT_DIR/conf/instance.json"
 fi
+
+cp conf/redis-agent.conf /etc/supervisor/conf.d/

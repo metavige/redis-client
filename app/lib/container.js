@@ -7,10 +7,11 @@
 
 var requestify = require('requestify'),
     util = require('util'),
+    path = require('path'),
     _ = require('underscore');
-// var http = require('http');
-// var fs = require('fs');
-var config = require('./config');
+
+var config = require(path.join(__dirname, '/config'));
+var logger = require(path.join(__dirname, '/logger'));
 
 var redisContainerApi = module.exports = {};
 
@@ -18,12 +19,12 @@ var containersApi = {
     register: config.settings.apiRoot + '/api/containers',
     redisInfo: config.settings.apiRoot + '/api/containers/%s/process/%s'
 };
-// var http = require('http');
 
 /**
  * 註冊 Container
  */
 redisContainerApi.registerContainer = function() {
+    logger.info('register contianer.....', containersApi.register);
 
     requestify
         .post(containersApi.register, {
@@ -32,17 +33,24 @@ redisContainerApi.registerContainer = function() {
         })
         .then(function(res) {
             try {
-                if (res.getCode() == 200) {
+                var statusCode = res.getCode();
+                if (statusCode == 404) {
+                    logger.error('register container faile, wrong api: ', containersApi.register);
+                    throw new Error('can\'t register container');
+                }
+
+                if (statusCode == 200 || statusCode == 201) {
                     config.container = _.extend(config.container || {}, {
                         id: res.getBody().containerId
                     });
-                    console.log('save config.....', config.container);
+                    logger.info('save config.....', config.container);
                 }
 
-                console.log('response:', res.getBody());
-                console.log(res.body);
+                logger.debug('response:', res.getCode(), res.getBody());
+                // logger.debug(res.body);
+
             } catch (ex) {
-                console.log(ex);
+                logger.error('register error: ', ex);
             }
         });
 };
@@ -55,23 +63,23 @@ redisContainerApi.sendRedisInfo = function(redisInfo) {
     /**
      * 網址組合成 api/containers/{containerId}/process/{processId}
      */
-    if (redisInfo != null) {
+    if (redisInfo !== null) {
 
         var url = util.format(containersApi.redisInfo,
             config.container.id,
             redisInfo.id);
 
-        console.log('call redis update status api: ', url);
+        logger.debug('call redis update status api: ', url);
         requestify
             .put(url, redisInfo)
             .then(function(res) {
-                console.log(res);
+                logger.debug(res);
                 try {
-                    console.log("call sendRedisInfo:", res.getCode());
-                    // console.log('response:', res.getBody());
-                    // console.log(res.body);
+                    logger.debug("call sendRedisInfo:", res.getCode());
+                    // logger.debug('response:', res.getBody());
+                    // logger.debug(res.body);
                 } catch (ex) {
-                    console.error('sendRedisInfo: ', ex);
+                    logger.error('sendRedisInfo: ', ex);
                     // TODO:
                 }
             });
