@@ -20,12 +20,6 @@ router.route('/')
             }
          */
 
-        /**
-            1. get redis create process param from body
-            2. make redis start process command
-            3. usr child_process.exec to execute command (async)
-            4. return command execute status, ok or fail
-         */
         logger.debug('Redis Api Request Body: ', req.body);
 
         var redisSettings = req.body;
@@ -56,7 +50,7 @@ router.route('/')
             return;
         }
 
-        redisAdapter.create(req.body);
+        redisAdapter.newRedis(req.body);
 
         res.status(200).send(redisSettings);
         // next();

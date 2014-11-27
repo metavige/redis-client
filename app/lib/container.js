@@ -35,18 +35,27 @@ redisContainerApi.registerContainer = function() {
             try {
                 var statusCode = res.getCode();
                 if (statusCode == 404) {
-                    logger.error('register container faile, wrong api: ', containersApi.register);
+                    logger.error(
+                        'register container faile, wrong api: ',
+                        containersApi.register);
                     throw new Error('can\'t register container');
                 }
+                var reqBody = res.getBody();
 
                 if (statusCode == 200 || statusCode == 201) {
                     config.container = _.extend(config.container || {}, {
-                        id: res.getBody().containerId
+                        id: reqBody.containerId
                     });
-                    logger.info('save config.....', config.container);
+
+                    // if this container is proxy, need set sentinel port, auth
+                    if (config.container.type == 'proxy') {
+                        config.sentinel = reqBody.sentinel;
+                    }
+
+                    logger.info('save config.....', config);
                 }
 
-                logger.debug('response:', res.getCode(), res.getBody());
+                logger.debug('response:', statusCode, reqBody);
                 // logger.debug(res.body);
 
             } catch (ex) {

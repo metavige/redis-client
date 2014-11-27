@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# See https://docs.docker.com/reference/commandline/cli/#examples_5
+#   Find a Specific Port Mapping:
+docker inspect --format '{{(index (index .NetworkSettings.Ports "26379/tcp") 0).HostPort }}' $(docker ps | grep sentinel | awk '{print $1}')
