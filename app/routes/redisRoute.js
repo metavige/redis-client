@@ -23,7 +23,7 @@ router.route('/')
 
         function guardCheck(callback, checkFunc, paramData, messageGetter) {
 
-            if (checkFunc.call(null, paramData) == false) {
+            if (checkFunc.call(null, paramData) == true) {
                 var message = _.isFunction(messageGetter) ? messageGetter.call(null,
                     paramData) : messageGetter;
                 res.status(400).send({
@@ -40,41 +40,43 @@ router.route('/')
 
         // Do flow
         async.series([
-            // Check id
-            function(callback) {
-                guardCheck(callback,
-                    _.isUndefined, redisSettings.id, 'id is undefined');
-            },
-            // Check port
-            function(callback) {
-                guardCheck(callback,
-                    _.isNaN, redisSettings.port, 'port is NaN');
-            },
-            // Check memory
-            function(callback) {
-                guardCheck(callback,
-                    _.isNaN, redisSettings.mem, 'mem is NaN');
-            },
-            // Check password
-            function(callback) {
-                guardCheck(callback,
-                    _.isUndefined, redisSettings.pwd, 'pwd is undefined');
-            }
-        ], function(error, result) {
-            if (error != null) return;
-            // Final add sentinel monitor settings
-            try {
-                redisAdapter.newRedis(req.body);
+                // Check id
+                function(callback) {
+                    guardCheck(callback,
+                        _.isUndefined, redisSettings.id, 'id is undefined');
+                },
+                // Check port
+                function(callback) {
+                    guardCheck(callback,
+                        _.isNaN, redisSettings.port, 'port is NaN');
+                },
+                // Check memory
+                function(callback) {
+                    guardCheck(callback,
+                        _.isNaN, redisSettings.mem, 'mem is NaN');
+                },
+                // Check password
+                function(callback) {
+                    guardCheck(callback,
+                        _.isUndefined, redisSettings.pwd, 'pwd is undefined');
+                }
+            ],
+            function(error, result) {
+                if (error != null) return;
+                // Final add sentinel monitor settings
+                try {
+                    redisAdapter.newRedis(req.body);
 
-                res.status(200).send(redisSettings);
-            } catch (ex) {
-                logger.error('newRedis error: ', ex);
-                res.status(400).send({
-                    message: ex.message
-                });
+                    res.status(200).send(redisSettings);
+                } catch (ex) {
+                    logger.error('newRedis error: ', ex);
+                    res.status(400).send({
+                        message: ex.message
+                    });
+                }
+                // end flow
             }
-            // end flow
-        });
+        );
 
     });
 

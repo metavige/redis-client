@@ -49,6 +49,7 @@ var sentinelConfig = {
  */
 function spawnCommand(command, args, callback) {
     var child = spawn(command, args);
+    logger.debug('spawn arguments:', args);
 
     var result = {
         out: null,
@@ -89,9 +90,7 @@ function redisCli(callback, port, auth, params) {
     // logger.debug('redis-cli params:', redisCliParams);
 
     spawnCommand('redis-cli', redisCliParams, function(code, result) {
-        if (code == 0 && /^OK/.test(result.out)) {
-            callback(null, result);
-        }
+        callback((code == 0 && /^OK/.test(result.out)) ? null : result.err, result);
     });
 }
 
@@ -151,6 +150,7 @@ redisAdapter.newRedis = function(options) {
             });
         },
         function(callback) {
+            logger.debug('update redis info status');
             // Call Redis Info Update
             redisCli(function(error, result) {
                 var sendData = {
@@ -158,19 +158,19 @@ redisAdapter.newRedis = function(options) {
                 };
                 if (error == null) {
                     var redisInfoData = redisInfo.parse(result.out);
+                    logger.debug('parse redisInfo: ', redisInfoData);
 
-                    containerApi.sendRedisInfo(_.extend(sendData, {
+                    sendData = _.extend(sendData, {
                         info: redisInfoData
-                    }));
-
-                    callback(null);
+                    });
                 } else {
-                    containerApi.sendRedisInfo(_.extend(sendData, {
-                        error: result.error
-                    }));
-
-                    callback(result.error);
+                    sendData = _.extend(sendData, {
+                        error: result.err
+                    });
                 }
+                containerApi.sendRedisInfo(sendData);
+
+                callback(error);
             }, options.port, optinos.pwd, ['info']);
         }
     ], function(err, result) {
