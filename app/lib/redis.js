@@ -82,9 +82,11 @@ function spawnCommand(command, args, callback) {
  */
 function redisCli(callback, port, auth, params) {
     var redisCliParams = _.map(params, _.clone);
-    _.each(['-p', port, '-a', auth].reverse(), redisCliParams.unshift);
+    _.each(['-p', port, '-a', auth].reverse(), function(v, k) {
+        redisCliParams.unshift(v);
+    });
 
-    logger.debug('redis-cli params:', redisCliParams);
+    // logger.debug('redis-cli params:', redisCliParams);
 
     spawnCommand('redis-cli', redisCliParams, function(code, result) {
         if (code == 0 && /^OK/.test(result.out)) {
@@ -102,7 +104,7 @@ function redisCli(callback, port, auth, params) {
 function sentinelCli(callback, params) {
     var sentinelParams = _.map(params, _.clone);
     sentinelParams.unshift('sentinel');
-    logger.debug('sentinel params:', sentinelParams);
+    // logger.debug('sentinel params:', sentinelParams);
 
     redisCli(callback,
         config.settings.sentinel.port,
