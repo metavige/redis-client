@@ -143,7 +143,7 @@ redisAdapter.newRedis = function(options) {
     async.series([
         function(callback) {
             spawnCommand('redis-server', cmdArgs, function(code, result) {
-                if (code == 0 && /^OK/.test(result.out)) {
+                if (code == 0) {
                     logger.info('create redis server success !!!');
                     callback(null);
                 }
@@ -154,11 +154,12 @@ redisAdapter.newRedis = function(options) {
             // Call Redis Info Update
             redisCli(function(error, result) {
                 var sendData = {
-                    id: option.id
+                    id: options.id
                 };
                 if (error == null) {
                     var redisInfoData = redisInfo.parse(result.out);
-                    logger.debug('parse redisInfo: ', redisInfoData);
+                    logger.debug('parse redisInfo: ', JSON.stringify(
+                        redisInfoData));
 
                     sendData = _.extend(sendData, {
                         info: redisInfoData
@@ -171,7 +172,7 @@ redisAdapter.newRedis = function(options) {
                 containerApi.sendRedisInfo(sendData);
 
                 callback(error);
-            }, options.port, optinos.pwd, ['info']);
+            }, options.port, options.pwd, ['info']);
         }
     ], function(err, result) {
         // Report sentinel setting OK!
