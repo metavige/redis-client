@@ -48,35 +48,33 @@ router.route('/')
             // Check port
             function(callback) {
                 guardCheck(callback,
-                    _.NaN, redisSettings.port, 'port is NaN');
+                    _.isNaN, redisSettings.port, 'port is NaN');
             },
             // Check memory
             function(callback) {
                 guardCheck(callback,
-                    _.NaN, redisSettings.mem, 'mem is NaN');
+                    _.isNaN, redisSettings.mem, 'mem is NaN');
             },
             // Check password
             function(callback) {
                 guardCheck(callback,
                     _.isUndefined, redisSettings.pwd, 'pwd is undefined');
-            },
-            // Final add sentinel monitor settings
-            function(callback) {
-
-                try {
-                    redisAdapter.newRedis(req.body);
-
-                    res.status(200).send(redisSettings);
-                } catch (ex) {
-                    logger.error('newRedis error: ', ex);
-                    res.status(400).send({
-                        message: ex.message
-                    });
-                }
-                callback(null); //
-                // end flow
             }
-        ]);
+        ], function(error, result) {
+            if (error != null) return;
+            // Final add sentinel monitor settings
+            try {
+                redisAdapter.newRedis(req.body);
+
+                res.status(200).send(redisSettings);
+            } catch (ex) {
+                logger.error('newRedis error: ', ex);
+                res.status(400).send({
+                    message: ex.message
+                });
+            }
+            // end flow
+        });
 
     });
 
