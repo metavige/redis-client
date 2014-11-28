@@ -118,13 +118,20 @@ var redisAdapter = module.exports = {};
 
 /**
  * 建立一個新的 Redis Instance
- * [create description]
- * @param  {Number}   port     Redis PortNUmber
- * @param  {Number}   memory   Redis MemorySize
- * @param  {String}   pwd      Password
+ *
+ * @param  {Object}   options  Redis Instance option
  * @return {[type]}            [description]
  */
 redisAdapter.newRedis = function(options) {
+
+    /** options sample:
+        {
+            id: 'containerProcessId',
+            port: 'redis port',
+            pwd: 'auth password',
+            mem: 'allocate memory size'
+        }
+    */
 
     // command: redis-server --port 123 --maxmemory 128mb --requirepass 123 --daemonize yes
 
@@ -134,9 +141,42 @@ redisAdapter.newRedis = function(options) {
         '--daemonize', 'yes'
     ];
 
-    spawnCommand('redis-server', cmdArgs, function(code, result) {
-        if (code == 0 && result.out.indexOf("ERR") < 0) {
-            logger.info('create redis server success !!!');
+    async.series([
+        function(callback) {
+            spawnCommand('redis-server', cmdArgs, function(code, result) {
+                if (code == 0 && /^OK/.test(result.out)) {
+                    logger.info('create redis server success !!!');
+                    callback(null);
+                }
+            });
+        },
+        function(callback) {
+            // Call Redis Info Update
+            redisCli(function(error, result) {
+                var sendData = {
+                    id: option.id
+                };
+                if (error == null) {
+                    var redisInfoData = redisInfo.parse(result.out);
+
+                    containerApi.sendRedisInfo(_.extend(sendData, {
+                        info: redisInfoData
+                    }));
+
+                    callback(null);
+                } else {
+                    containerApi.sendRedisInfo(_.extend(sendData, {
+                        error: result.error
+                    }));
+
+                    callback(result.error);
+                }
+            }, options.port, optinos.pwd, ['info']);
+        }
+    ], function(err, result) {
+        // Report sentinel setting OK!
+        if (err == null) {
+            logger.info('redis-server create ok !!!');
         }
     });
 };
@@ -144,11 +184,11 @@ redisAdapter.newRedis = function(options) {
 /**
  * initial sentinel monitor
  *
- * @param {[type]} monitorName  Sentinel Monitor Name (Maybe ResId)
- * @param {[type]} masterHost   [description]
- * @param {[type]} masterPort   [description]
- * @param {[type]} auth         [description]
- * @param {[type]} quorum       [description]
+ * @param {String} monitorName  Sentinel monitor name (Maybe ResId)
+ * @param {String} masterHost   Redis master host ip
+ * @param {Number} masterPort   Redis master port
+ * @param {String} auth         Master authorize password
+ * @param {Number} quorum       master quorum
  */
 redisAdapter.addSentinelMonitor = function(monitorName, masterHost, masterPort, auth, quorum) {
 
@@ -182,23 +222,13 @@ redisAdapter.addSentinelMonitor = function(monitorName, masterHost, masterPort, 
                 sentinelCli(callback, ['set', monitorName, k, v]);
             });
 
-            async.series(configs);
+            async.series(configs, callback);
         }
-    ]);
-};
 
-//
-// Grap Sentinel Port
-// docker inspect --format '{{(index (index .NetworkSettings.Ports "26379/tcp") 0).HostPort }}' $(docker ps | grep sentinel | awk '{print $1}')
-//
-// if (config.container.type !== 'redis') {
-//     spawnCommand('sh', [path.join(_dirname, 'bin/grap-sentinel-port')],
-//         function(
-//             code, result) {
-//             if (code == 0 && !_.isNaN(result)) {
-//                 config.sentinel = {
-//                     port: new Number(port)
-//                 };
-//             }
-//         });
-// }
+    ], function(err, result) {
+        // Report sentinel setting OK!
+        if (err == null) {
+            logger.info('sentinel monitor ok !!!');
+        }
+    });
+};
