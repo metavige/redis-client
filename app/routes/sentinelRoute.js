@@ -30,6 +30,7 @@ router.route('/')
                 res.status(400).send({
                     message: message
                 });
+                return;
             }
 
             callback(null);
