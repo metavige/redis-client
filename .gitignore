@@ -4,3 +4,4 @@ build
 conf/instance.json
 conf/config.json
 conf
+npm-debug.log

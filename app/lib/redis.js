@@ -82,12 +82,12 @@ function spawnCommand(command, args, callback) {
  */
 function redisCli(callback, port, auth, params) {
     var redisCliParams = _.map(params, _.clone);
-    _.each(['-p', port, '-a', auth], redisCliParams.push);
+    _.each(['-p', port, '-a', auth].reverse(), redisCliParams.unshift);
 
     logger.debug('redis-cli params:', redisCliParams);
 
     spawnCommand('redis-cli', redisCliParams, function(code, result) {
-        if (code == 0 && result.out.indexOf("ERR") < 0) {
+        if (code == 0 && /^OK/.test(result.out)) {
             callback(null, result);
         }
     });
@@ -171,13 +171,13 @@ redisAdapter.addSentinelMonitor = function(monitorName, masterHost, masterPort, 
         },
         function(callback) {
             // SET MASTER AUTH
-            sentinelCli(callback, ['set', 'auth-pass', auth]);
+            sentinelCli(callback, ['set', monitorName, 'auth-pass', auth]);
         },
         function(callback) {
             // Config .....
             var configs = [];
             _.each(allConfigOptions, function(v, k) {
-                sentinelCli(callback, ['set', k, v]);
+                sentinelCli(callback, ['set', monitorName, k, v]);
             });
 
             async.series(configs);
