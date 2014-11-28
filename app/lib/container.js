@@ -41,18 +41,21 @@ redisContainerApi.registerContainer = function() {
                     throw new Error('can\'t register container');
                 }
                 var reqBody = res.getBody();
+                logger.debug('Request Body:' + JSON.stringify(reqBody));
 
                 if (statusCode == 200 || statusCode == 201) {
-                    config.container = _.extend(config.container || {}, {
+                    config.settings.container = _.extend(config.settings.container || {}, {
                         id: reqBody.containerId
                     });
 
+                    logger.info('config.settings.....', JSON.stringify(config.settings));
+
                     // if this container is proxy, need set sentinel port, auth
-                    if (config.container.type == 'proxy') {
-                        config.sentinel = reqBody.sentinel;
+                    if (config.settings.type === 'proxy') {
+                        config.settings.sentinel = _.extend(reqBody.sentinel || {});
                     }
 
-                    logger.info('save config.....', config);
+                    logger.info('save config.....', JSON.stringify(config.settings));
                 }
 
                 logger.debug('response:', statusCode, reqBody);
@@ -75,7 +78,7 @@ redisContainerApi.sendRedisInfo = function(redisInfo) {
     if (redisInfo !== null) {
 
         var url = util.format(containersApi.redisInfo,
-            config.container.id,
+            config.settings.container.id,
             redisInfo.id);
 
         logger.debug('call redis update status api: ', url);
@@ -95,6 +98,6 @@ redisContainerApi.sendRedisInfo = function(redisInfo) {
     }
 };
 
-if (_.isUndefined(config.container)) {
+if (_.isUndefined(config.settings.container)) {
     redisContainerApi.registerContainer();
 }

@@ -42,8 +42,9 @@ var sentinelConfig = {
 
 /**
  * Use child_process.spawn to execute command
- * @param {[type]}   command  [description]
- * @param {[type]}   args     [description]
+ *
+ * @param {String}   command  [description]
+ * @param {Array}    args     [description]
  * @param {Function} callback [description]
  */
 function spawnCommand(command, args, callback) {
@@ -55,12 +56,13 @@ function spawnCommand(command, args, callback) {
     };
 
     child.stdout.on('data', function(data) {
-        result.out = data;
+        result.out = '' + data;
+        // logger.debug('execute process result: ', result.out);
     });
 
     child.stderr.on('data', function(data) {
-        logger.error(data);
-        result.err = data;
+        result.err = '' + data;
+        logger.error('child process error: ', result.err);
     });
 
     child.on('close', function(code) {
@@ -70,23 +72,41 @@ function spawnCommand(command, args, callback) {
     });
 }
 
+/**
+ * Run Redis cli command
+ *
+ * @param {Function} callback [description]
+ * @param {Number}   port     [description]
+ * @param {String}   auth     [description]
+ * @param {Array}    params   [description]
+ */
 function redisCli(callback, port, auth, params) {
     var redisCliParams = _.map(params, _.clone);
     _.each(['-p', port, '-a', auth], redisCliParams.push);
 
     logger.debug('redis-cli params:', redisCliParams);
 
-    spawnCommand('redis-cli', redisCliParams, callback);
+    spawnCommand('redis-cli', redisCliParams, function(code, result) {
+        if (code == 0 && result.out.indexOf("ERR") < 0) {
+            callback(null, result);
+        }
+    });
 }
 
-function sentinelCli = function(callback, params) {
+/**
+ * Run Sentinel Cli Command
+ *
+ * @param {Function} callback [description]
+ * @param {Array}    params   [description]
+ */
+function sentinelCli(callback, params) {
     var sentinelParams = _.map(params, _.clone);
     sentinelParams.unshift('sentinel');
     logger.debug('sentinel params:', sentinelParams);
 
     redisCli(callback,
-        config.sentinel.port,
-        config.sentinel.auth,
+        config.settings.sentinel.port,
+        config.settings.sentinel.auth,
         sentinelParams);
 }
 
@@ -113,7 +133,7 @@ redisAdapter.newRedis = function(options) {
     ];
 
     spawnCommand('redis-server', cmdArgs, function(code, result) {
-        if (code === 0) {
+        if (code == 0 && result.out.indexOf("ERR") < 0) {
             logger.info('create redis server success !!!');
         }
     });
@@ -121,15 +141,14 @@ redisAdapter.newRedis = function(options) {
 
 /**
  * initial sentinel monitor
+ *
  * @param {[type]} monitorName  Sentinel Monitor Name (Maybe ResId)
  * @param {[type]} masterHost   [description]
  * @param {[type]} masterPort   [description]
  * @param {[type]} auth         [description]
  * @param {[type]} quorum       [description]
  */
-redisAdapter.sentinelMonitor = function(monitorName,
-    masterHost, masterPort,
-    auth, quorum) {
+redisAdapter.addSentinelMonitor = function(monitorName, masterHost, masterPort, auth, quorum) {
 
     // command: redis-cli -p [sentinelPort] sentinel monitor [monitorName] [masterHost] [masterPort] [quorum]
     // command: redis-cli -p [sentinelPort] sentinel set [monitorName] [configOption] [configValue]
@@ -164,43 +183,6 @@ redisAdapter.sentinelMonitor = function(monitorName,
             async.series(configs);
         }
     ]);
-}
-
-
-/**
- * TODO: 目前發現好像有問題，所以看看是否不需要這個
- *
- * 更新 Redis Instance Info
- * @param {Boolean} redisConfig [description]
- */
-redisAdapter.infoUpdate = function(redisConfig) {
-
-    var command = util.format(commands.redis.info, redisConfig.port,
-        redisConfig.pwd);
-    logger.debug('get redis info: ', command);
-
-    exec(command, function(error, stdout, stderr) {
-
-        var updatedStatus = {
-            id: redisConfig.id
-        };
-
-        //logger.debug(stdout);
-        if (error !== null) {
-            logger.error('info exeute error', error, stderr);
-            // errorBack.call(null);
-            updatedStatus.error = error;
-
-            // TODO: Error Call
-            containerApi.sendRedisInfo(updatedStatus);
-        } else {
-            var redisInfoData = redisInfo.parse(stdout);
-            updatedStatus.info = redisInfoData;
-
-            containerApi.sendRedisInfo(updatedStatus);
-        }
-        // callback(error === null);
-    });
 };
 
 //

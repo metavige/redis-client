@@ -19,14 +19,14 @@ try {
 }
 
 config.saveContainerInfo = function(info) {
-    config.container = {
+    config.settings.container = {
         id: info.containerId,
         type: info.containerType
     };
 };
 
-config.saveInstance = function (instInfo) {
-  // TODO: save instance data to instance.json
+config.saveInstance = function(instInfo) {
+    // TODO: save instance data to instance.json
 };
 
 module.exports = config;
