@@ -25,7 +25,7 @@ router.route('/')
         logger.debug('Proxy Api Request Body: ', proxyData);
 
         // Call redisAdapter
-        redisAdapter.createTwemProxy(proxyData.resId, proxyData.id, proxyData.port, proxyData.statProxy);
+        redisAdapter.createTwemProxy(proxyData.resId, proxyData.id, proxyData.port, proxyData.statPort);
     });
 
 module.exports = router;
