@@ -14,7 +14,8 @@ router.route('/')
     .post(function(req, res, next) {
         /**
             Post Body = {
-                name: 'sentinel monitor name',
+                name: 'sentinel monitor name (redisInfo ResId)',
+                procId: 'containerProcess Id',
                 ip: 'master redis host',
                 port: 'master redis port',
                 pwd: 'auth password',
@@ -70,10 +71,8 @@ router.route('/')
             function(callback) {
                 try {
                     redisAdapter.addSentinelMonitor(sentinelData.name,
-                        sentinelData.ip,
-                        sentinelData.port,
-                        sentinelData.pwd,
-                        sentinelData.quorum);
+                        sentinelData.procId,
+                        sentinelData);
 
                     res.status(200).end();
                 } catch (ex) {

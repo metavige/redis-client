@@ -53,7 +53,9 @@ function spawnCommand(command, args, callback) {
 
     var result = {
         out: null,
-        err: null
+        err: null,
+        cli: command,
+        args: args
     };
 
     child.stdout.on('data', function(data) {
@@ -183,15 +185,18 @@ redisAdapter.newRedis = function(options) {
 };
 
 /**
- * initial sentinel monitor
+ * 透過 sentinel 的指令，將 Redis Master 加入 sentinel 管理
  *
- * @param {String} monitorName  Sentinel monitor name (Maybe ResId)
- * @param {String} masterHost   Redis master host ip
- * @param {Number} masterPort   Redis master port
- * @param {String} auth         Master authorize password
- * @param {Number} quorum       master quorum
+ * @param {Object} sentinelData  Sentinel Data
  */
-redisAdapter.addSentinelMonitor = function(monitorName, masterHost, masterPort, auth, quorum) {
+redisAdapter.addSentinelMonitor = function(resId, procId, sentinelData) {
+
+    // sentinelData.name,
+    // sentinelData.ip,
+    // sentinelData.port,
+    // sentinelData.pwd,
+    // sentinelData.quorum
+    // sentinelData.procId
 
     // command: redis-cli -p [sentinelPort] sentinel monitor [monitorName] [masterHost] [masterPort] [quorum]
     // command: redis-cli -p [sentinelPort] sentinel set [monitorName] [configOption] [configValue]
@@ -206,30 +211,61 @@ redisAdapter.addSentinelMonitor = function(monitorName, masterHost, masterPort, 
         function(callback) {
             // setup Monitor first
             sentinelCli(callback, ['monitor',
-                monitorName,
-                masterHost,
-                masterPort,
-                quorum
+                sentinelData.name,
+                sentinelData.ip,
+                sentinelData.port,
+                sentinelData.quorum
             ]);
         },
         function(callback) {
             // SET MASTER AUTH
-            sentinelCli(callback, ['set', monitorName, 'auth-pass', auth]);
+            sentinelCli(callback, ['set', sentinelData.name, 'auth-pass', sentinelData.pwd]);
         },
         function(callback) {
             // Config .....
             var configs = [];
             _.each(allConfigOptions, function(v, k) {
-                sentinelCli(callback, ['set', monitorName, k, v]);
+                sentinelCli(callback, ['set', sentinelData.name, k, v]);
             });
 
             async.series(configs, callback);
         }
 
     ], function(err, result) {
+
+        logger.debug('add sentinel result:', result);
+
         // Report sentinel setting OK!
         if (err == null) {
             logger.info('sentinel monitor ok !!!');
         }
+
+        // Call Sentine Api report status
+        containerApi.updateSentinelStatus(resId, procId, result);
+    });
+};
+
+/**
+ * 建立 Proxy
+ *
+ * @param {[type]} resId    [description]
+ * @param {[type]} procId   [description]
+ * @param {[type]} port     [description]
+ * @param {[type]} statPort [description]
+ */
+redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
+    var cmdArgs = [resId, port, statPort];
+
+    spawnCommand(path.join(__dirname, '../../bin/start-twemproxy'), cmdArgs, function(code,
+        result) {
+        if (code == 0) {
+            logger.info('create twemproxy success !!!');
+            callback(null);
+        }
+
+        logger.debug('create twemproxy result:', result);
+        // TODO: Error Callback!?
+        //
+        containerApi.updateProxyStatus(resId, procId, result);
     });
 };
