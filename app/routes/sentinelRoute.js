@@ -46,6 +46,17 @@ router.route('/')
 
         // Do flow
         async.series([
+
+            // Check procId
+            function(callback) {
+                guardCheck(callback,
+                    _.isUndefined, sentinelData.procId, 'procId is undefined');
+            },
+            // Check name
+            function(callback) {
+                guardCheck(callback,
+                    _.isUndefined, sentinelData.name, 'name is undefined');
+            },
             // Check port
             function(callback) {
                 var emptyStrRegEx = /^$/;
@@ -55,11 +66,20 @@ router.route('/')
                         return emptyStrRegEx.test(data);
                     }, sentinelData.name, 'name is empty');
             },
-
+            // Check port
+            function(callback) {
+                guardCheck(callback,
+                    _.isUndefined, sentinelData.port, 'port is undefined');
+            },
             // Check port
             function(callback) {
                 guardCheck(callback,
                     _.isNaN, sentinelData.port, 'port is NaN');
+            },
+            // Check quorum
+            function(callback) {
+                guardCheck(callback,
+                    _.isUndefined, sentinelData.quorum, 'quorum is undefined');
             },
             // Check quorum
             function(callback) {
