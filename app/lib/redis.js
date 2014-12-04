@@ -230,20 +230,24 @@ redisAdapter.addSentinelMonitor = function(resId, procId, sentinelData) {
             });
 
             async.series(configs, callback);
+        },
+        function(callback) {
+
+            var result = {
+                code: 0,
+                out: '',
+                err: '',
+                cli: '',
+                args: []
+            };
+
+            logger.info('call containerApi to update sentinel status', result);
+            // Call Sentine Api report status
+            containerApi.updateSentinelStatus(resId, procId, result);
+
+            callback(null, result);
         }
-
-    ], function(err, result) {
-
-        logger.debug('add sentinel result:', result);
-
-        // Report sentinel setting OK!
-        if (err == null) {
-            logger.info('sentinel monitor ok !!!');
-        }
-
-        // Call Sentine Api report status
-        containerApi.updateSentinelStatus(resId, procId, result);
-    });
+    ]);
 };
 
 /**
@@ -263,6 +267,7 @@ redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
         result) {
         if (code == 0) {
             logger.info('create twemproxy success !!!');
+
             callback(null);
         }
 

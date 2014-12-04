@@ -16,10 +16,10 @@ var logger = require(path.join(__dirname, '/logger'));
 var redisContainerApi = module.exports = {};
 
 var containersApi = {
-    register: path.join(config.settings.apiRoot, '/api/containers'),
-    redisInfo: path.join(config.settings.apiRoot, '/api/containers/%s/process/%s'),
-    updateSentinelStatus: path.join(config.settings.apiRoot, '/api/containers/%s/sentinels/%s'),
-    updateProxyStatus: path.join(config.settings.apiRoot, '/api/containers/%s/proxies/%s'),
+    register: config.settings.apiRoot + '/api/containers',
+    redisInfo: config.settings.apiRoot + '/api/containers/%s/process/%s',
+    updateSentinelStatus: config.settings.apiRoot + '/api/containers/%s/sentinels/%s',
+    updateProxyStatus: config.settings.apiRoot + '/api/containers/%s/proxies/%s',
 };
 
 /**
