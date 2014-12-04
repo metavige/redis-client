@@ -254,9 +254,9 @@ redisAdapter.addSentinelMonitor = function(resId, procId, sentinelData) {
  * @param {[type]} statPort [description]
  */
 redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
-    var cmdArgs = [resId, port, statPort];
+    var cmdArgs = [path.join(__dirname, '../../bin/start-twemproxy'), resId, port, statPort];
 
-    spawnCommand(path.join(__dirname, '../../bin/start-twemproxy'), cmdArgs, function(code,
+    spawnCommand('sh', cmdArgs, function(code,
         result) {
         if (code == 0) {
             logger.info('create twemproxy success !!!');
