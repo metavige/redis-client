@@ -267,8 +267,6 @@ redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
         result) {
         if (code == 0) {
             logger.info('create twemproxy success !!!');
-
-            callback(null);
         }
 
         logger.debug('create twemproxy result:', result);
