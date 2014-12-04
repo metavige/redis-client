@@ -70,6 +70,7 @@ function spawnCommand(command, args, callback) {
 
     child.on('close', function(code) {
         logger.info('child process exited with code ' + code);
+        result.code = code;
 
         callback(code, result);
     });
