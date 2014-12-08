@@ -112,7 +112,7 @@ redisContainerApi.updateSentinelStatus = function(resId, procId, sentinelStatus)
         config.settings.container.id,
         procId);
 
-    logger.debug('update sentinel status');
+    logger.debug('update sentinel status: ', url);
     requestify
         .put(url, sentinelStatus)
         .then(function(res) {
@@ -142,17 +142,17 @@ redisContainerApi.updateProxyStatus = function(resId, procId, status) {
         config.settings.container.id,
         procId);
 
-    logger.debug('update proxy status');
+    logger.debug('update proxy status: ', url);
     requestify
         .put(url, status)
         .then(function(res) {
             logger.debug(res);
             try {
-                logger.debug("call update sentinel:", res.getCode());
+                logger.debug("call update proxy:", res.getCode());
                 // logger.debug('response:', res.getBody());
                 // logger.debug(res.body);
             } catch (ex) {
-                logger.error('update sentinel status: ', ex);
+                logger.error('update proxy status: ', ex);
                 // TODO:
             }
         });
