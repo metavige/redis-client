@@ -263,15 +263,19 @@ redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
 
     logger.debug('run twemproxy init:', cmdArgs);
 
-    spawnCommand('sh', cmdArgs, function(code,
-        result) {
-        if (code == 0) {
-            logger.info('create twemproxy success !!!');
-        }
+    async.series([function(callback) {
+        spawnCommand('sh', cmdArgs, function(code,
+            result) {
+            if (code == 0) {
+                logger.info('create twemproxy success !!!');
+            }
 
-        logger.debug('create twemproxy result:', result);
-        // TODO: Error Callback!?
-        //
-        containerApi.updateProxyStatus(resId, procId, result);
-    });
+            logger.debug('create twemproxy result:', result);
+            // TODO: Error Callback!?
+            //
+            containerApi.updateProxyStatus(resId, procId, result);
+        });
+
+        callback(null);
+    }]);
 };
