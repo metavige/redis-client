@@ -13,7 +13,8 @@ var path = require('path'),
     util = require('util'),
     async = require('async'),
     _ = require("underscore"),
-    redisInfo = require('redis-info');
+    redisInfo = require('redis-info'),
+    Docker = require('dockerode');
 
 var config = require(path.join(__dirname, '/config'));
 var containerApi = require(path.join(__dirname, './container'));
@@ -259,23 +260,91 @@ redisAdapter.addSentinelMonitor = function(resId, procId, sentinelData) {
  * @param {[type]} statPort [description]
  */
 redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
-    var cmdArgs = [path.join(__dirname, '../../bin/start-twemproxy'), resId, port, statPort];
+    // var cmdArgs = [path.join(__dirname, '../../bin/start-twemproxy'), resId, port, statPort];
+
+    /**
+     *  1. 設定 twemproxy 的 port 給 ETCD
+     *	2. 啟動 nebula/redis-twemproxy
+     *		所需參數
+     *			Local Public IP (eth0 public IP)
+     *			twemproxy port/statPort
+     *			ResInfo.ResId
+     */
 
     logger.debug('run twemproxy init:', cmdArgs);
+    /*
+        var getPublicIp = function() {
+            var ni = require('os').networkInterfaces();
+            var eth0Ipv4 = _.filter(ni['eth0'], function(data) {
+                return data.family == 'IPv4'
+            });
 
-    async.series([function(callback) {
-        spawnCommand('sh', cmdArgs, function(code,
-            result) {
-            if (code == 0) {
-                logger.info('create twemproxy success !!!');
-            }
+            return (eth0Ipv4.length > 0) ? eth0Ipv4[0].address : null;
+        };
+    */
+    async.waterfall([
+        function(cb) {
+            // create container
 
-            logger.debug('create twemproxy result:', result);
-            // TODO: Error Callback!?
-            //
-            containerApi.updateProxyStatus(resId, procId, result);
-        });
+            var optsc = {
+                'Hostname': '',
+                'User': '',
+                'AttachStdin': false,
+                'AttachStdout': true,
+                'AttachStderr': true,
+                'Tty': true,
+                'OpenStdin': false,
+                'StdinOnce': false,
+                'Env': ["PROCESS_ID=" + resId],
+                'Cmd': null,
+                'Image': "nebula/redis-twemproxy",
+                'Volumes': {},
+                'VolumesFrom': ''
+            };
 
-        callback(null);
-    }]);
+            docker.createContainer(optsc, cb);
+        },
+        function(container, cb) {
+            // start docker container
+            var startOptions = {
+                "PortBindings": {
+                    "6000/tcp": [{
+                        "HostPort": port
+                    }],
+                    "6222/tcp": [{
+                        "HostPort": statPort
+                    }]
+                }
+            };
+
+            container.start(startOptions, function(err, data) {
+
+                if (err != null) {
+                    logger.error('start container error!!!', err);
+
+                    var result = {
+                        code: -1,
+                        out: '',
+                        err: err,
+                        cli: '',
+                        args: []
+                    };
+                    containerApi.updateProxyStatus(resId, procId, result);
+                }
+
+                cb(err, container);
+            });
+        },
+        function(container, cb) {
+            console.log('container started! ', container.id);
+            // 最後一步，回報狀態
+            containerApi.updateProxyStatus(resId, procId, {
+                code: 0
+            });
+
+            callback(null);
+        }
+    ], function(err, result) {
+        logger.info('start a new twemproxy step.....', err, result);
+    });
 };
