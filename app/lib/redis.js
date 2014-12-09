@@ -275,16 +275,16 @@ redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
      */
 
     logger.debug('run twemproxy init:', arguments);
-    /*
-        var getPublicIp = function() {
-            var ni = require('os').networkInterfaces();
-            var eth0Ipv4 = _.filter(ni['eth0'], function(data) {
-                return data.family == 'IPv4'
-            });
 
-            return (eth0Ipv4.length > 0) ? eth0Ipv4[0].address : null;
-        };
-    */
+    var getPublicIp = function() {
+        var ni = require('os').networkInterfaces();
+        var eth0Ipv4 = _.filter(ni['eth0'], function(data) {
+            return data.family == 'IPv4'
+        });
+
+        return (eth0Ipv4.length > 0) ? eth0Ipv4[0].address : null;
+    };
+
     async.waterfall([
         function(cb) {
             // create container
@@ -298,7 +298,9 @@ redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
                 'Tty': true,
                 'OpenStdin': false,
                 'StdinOnce': false,
-                'Env': ["PROCESS_ID=" + resId],
+                'Env': ["PROCESS_ID=" + resId, "ETCD_HOST=" + getPublicIp() +
+                    ':4001'
+                ],
                 'Cmd': null,
                 'Image': "nebula/redis-twemproxy",
                 'Volumes': {},
