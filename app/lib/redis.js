@@ -16,6 +16,9 @@ var path = require('path'),
     redisInfo = require('redis-info'),
     Docker = require('dockerode');
 
+var docker = new Docker({
+    socketPath: '/var/run/docker.sock'
+});
 var config = require(path.join(__dirname, '/config'));
 var containerApi = require(path.join(__dirname, './container'));
 var logger = require(path.join(__dirname, './logger'));
@@ -271,7 +274,7 @@ redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
      *			ResInfo.ResId
      */
 
-    logger.debug('run twemproxy init:', cmdArgs);
+    logger.debug('run twemproxy init:', arguments);
     /*
         var getPublicIp = function() {
             var ni = require('os').networkInterfaces();
@@ -309,10 +312,10 @@ redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
             var startOptions = {
                 "PortBindings": {
                     "6000/tcp": [{
-                        "HostPort": port
+                        "HostPort": "" + port
                     }],
                     "6222/tcp": [{
-                        "HostPort": statPort
+                        "HostPort": "" + statPort
                     }]
                 }
             };
@@ -342,9 +345,9 @@ redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
                 code: 0
             });
 
-            callback(null);
+            cb(null);
         }
     ], function(err, result) {
-        logger.info('start a new twemproxy step.....', err, result);
+        logger.info('start a new twemproxy over.....');
     });
 };
