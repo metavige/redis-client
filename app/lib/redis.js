@@ -16,9 +16,9 @@ var path = require('path'),
     redisInfo = require('redis-info'),
     Docker = require('dockerode');
 
-// var docker = new Docker({
-//     socketPath: '/var/run/docker.sock'
-// });
+var docker = new Docker({
+    socketPath: '/var/run/docker.sock'
+});
 var config = require(path.join(__dirname, '/config'));
 var containerApi = require(path.join(__dirname, './container'));
 var logger = require(path.join(__dirname, './logger'));
@@ -263,7 +263,22 @@ redisAdapter.addSentinelMonitor = function(resId, procId, sentinelData) {
  * @param {[type]} statPort [description]
  */
 redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
-    var cmdArgs = [path.join(__dirname, '../../bin/start-twemproxy'), resId, port, statPort];
+
+    logger.debug('run twemproxy init:', arguments);
+
+    // var cmdArgs = [path.join(__dirname, '../../bin/start-twemproxy'), resId, port, statPort];
+
+    // spawnCommand('sh', cmdArgs, function(code,
+    //     result) {
+    //     if (code == 0) {
+    //         logger.info('create twemproxy success !!!');
+    //     }
+
+    //     logger.debug('create twemproxy result:', result);
+    //     // TODO: Error Callback!?
+    //     //
+    //     containerApi.updateProxyStatus(resId, procId, result);
+    // });
 
     /**
      *  1. 設定 twemproxy 的 port 給 ETCD
@@ -274,97 +289,83 @@ redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
      *			ResInfo.ResId
      */
 
-    logger.debug('run twemproxy init:', arguments);
+    var getPublicIp = function() {
+        var ni = require('os').networkInterfaces();
+        var eth0Ipv4 = _.filter(ni['eth0'], function(data) {
+            return data.family == 'IPv4'
+        });
+    
+        return (eth0Ipv4.length > 0) ? eth0Ipv4[0].address : null;
+    };
 
-    spawnCommand('sh', cmdArgs, function(code,
-        result) {
-        if (code == 0) {
-            logger.info('create twemproxy success !!!');
-        }
-
-        logger.debug('create twemproxy result:', result);
-        // TODO: Error Callback!?
-        //
-        containerApi.updateProxyStatus(resId, procId, result);
-    });
-
-    // var getPublicIp = function() {
-    //     var ni = require('os').networkInterfaces();
-    //     var eth0Ipv4 = _.filter(ni['eth0'], function(data) {
-    //         return data.family == 'IPv4'
-    //     });
-    //
-    //     return (eth0Ipv4.length > 0) ? eth0Ipv4[0].address : null;
-    // };
-
-    // async.waterfall([
-    //         function(cb) {
-    //             // create container
-    //
-    //             var optsc = {
-    //                 'Hostname': '',
-    //                 'User': '',
-    //                 'AttachStdin': false,
-    //                 'AttachStdout': true,
-    //                 'AttachStderr': true,
-    //                 'Tty': true,
-    //                 'OpenStdin': false,
-    //                 'StdinOnce': false,
-    //                 'Env': [
-    //                     "PROCESS_ID=" + resId,
-    //                     "ETCD_HOST=" + getPublicIp() + ":4001"
-    //                 ],
-    //                 'Cmd': [],
-    //                 'Image': "nebula/redis-twemproxy",
-    //                 'Volumes': {},
-    //                 'VolumesFrom': ''
-    //             };
-    //
-    //             docker.createContainer(optsc, cb);
-    //         },
-    //         function(container, cb) {
-    //             // start docker container
-    //             var startOptions = {
-    //                 "PortBindings": {
-    //                     "6000/tcp": [{
-    //                         "HostPort": "" + port
-    //                     }],
-    //                     "6222/tcp": [{
-    //                         "HostPort": "" + statPort
-    //                     }]
-    //                 }
-    //             };
-    //             logger.error(startOptions);
-    //
-    //             container.start(startOptions, function(err, data) {
-    //
-    //                 if (err != null) {
-    //                     logger.error('start container error!!!', err);
-    //
-    //                     var result = {
-    //                         code: -1,
-    //                         out: '',
-    //                         err: err,
-    //                         cli: '',
-    //                         args: []
-    //                     };
-    //                     containerApi.updateProxyStatus(resId, procId, result);
-    //                 }
-    //
-    //                 cb(err, container);
-    //             });
-    //         },
-    //         function(container, cb) {
-    //             console.log('container started! ', container.id);
-    //             // 最後一步，回報狀態
-    //             containerApi.updateProxyStatus(resId, procId, {
-    //                 code: 0
-    //             });
-    //
-    //             cb(null);
-    //         }
-    //     ],
-    //     function(err, result) {
-    //         logger.info('start a new twemproxy over.....');
-    //     });
+    async.waterfall([
+            function(cb) {
+                // create container
+    
+                var optsc = {
+                    'Hostname': '',
+                    'User': '',
+                    'AttachStdin': false,
+                    'AttachStdout': true,
+                    'AttachStderr': true,
+                    'Tty': true,
+                    'OpenStdin': false,
+                    'StdinOnce': false,
+                    'Env': [
+                        "PROCESS_ID=" + resId,
+                        "ETCD_HOST=" + getPublicIp() + ":4001"
+                    ],
+                    'Cmd': [],
+                    'Image': "nebula/redis-twemproxy",
+                    'Volumes': {},
+                    'VolumesFrom': ''
+                };
+    
+                docker.createContainer(optsc, cb);
+            },
+            function(container, cb) {
+                // start docker container
+                var startOptions = {
+                    "PortBindings": {
+                        "6000/tcp": [{
+                            "HostPort": "" + port
+                        }],
+                        "6222/tcp": [{
+                            "HostPort": "" + statPort
+                        }]
+                    }
+                };
+                logger.error(startOptions);
+    
+                container.start(startOptions, function(err, data) {
+    
+                    if (err != null) {
+                        logger.error('start container error!!!', err);
+    
+                        var result = {
+                            code: -1,
+                            out: '',
+                            err: err,
+                            cli: '',
+                            args: []
+                        };
+                        containerApi.updateProxyStatus(resId, procId, result);
+                    }
+    
+                    cb(err, container);
+                });
+            },
+            function(container, cb) {
+                console.log('container started! ', container.id);
+                // 最後一步，回報狀態
+                containerApi.updateProxyStatus(resId, procId, {
+                    code: 0
+                });
+    
+                cb(null);
+            }
+        ],
+        function(err, result) {
+            logger.info('start a new twemproxy over.....');
+        });
 };
