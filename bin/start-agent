@@ -1,0 +1,3 @@
+#!/bin/sh
+
+nodemon -w app -V app/app.js
