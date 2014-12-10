@@ -23,7 +23,8 @@ var config = require(path.join(__dirname, '/config'));
 var containerApi = require(path.join(__dirname, './container'));
 var logger = require(path.join(__dirname, './logger'));
 
-// Define bash command
+// Bash command sample reference
+/*
 var commands = {
     redis: {
         create: 'redis-server --port %d --maxmemory %dmb --requirepass %s --daemonize yes',
@@ -43,6 +44,7 @@ var commands = {
 var sentinelConfig = {
     port: 26379 // Default Setting, call ps to grap port
 };
+*/
 
 /**
  * Use child_process.spawn to execute command

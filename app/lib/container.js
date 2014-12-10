@@ -161,3 +161,10 @@ redisContainerApi.updateProxyStatus = function(resId, procId, status) {
 if (_.isUndefined(config.settings.container)) {
     redisContainerApi.registerContainer();
 }
+
+// 20141210 add container api ping, for wake up container api
+var timeoutId = setTimeout(function() {
+    requestify.get('api/ping').then(function(res) {
+        logger.debug('ping container: ', res.body);
+    });
+}, 6000 * 5);
