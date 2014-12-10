@@ -5,6 +5,7 @@
 #
 
 npm install
+npm install -g nodemon 
 
 AGENT_DIR=/usr/local/lib/redisAgent
 
