@@ -166,9 +166,17 @@ if (_.isUndefined(config.settings.container)) {
 var pingInterval = 6000 * 5;
 var timeoutId = setTimeout(pingContainer, pingInterval);
 function pingContainer() {
-    requestify.get('api/ping').then(function(res) {
-        logger.debug('ping container: ', res.body);
-    });
-    
-    timeoutId = setTimeout(pingContainer, pingInterval);
+    try {
+      requestify.get(config.settings.apiRoot + '/api/ping').then(function(res) {
+          var statusCode = res.getCode();
+          if (statusCode != 200) {
+            logger.error('ping container error: ', statusCode, res.body);
+          }
+
+          timeoutId = setTimeout(pingContainer, pingInterval);
+      });
+    }
+    catch(ex) {
+      logger.error('send ping error!', ex);
+    }
 };
