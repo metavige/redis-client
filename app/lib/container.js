@@ -163,8 +163,12 @@ if (_.isUndefined(config.settings.container)) {
 }
 
 // 20141210 add container api ping, for wake up container api
-var timeoutId = setTimeout(function() {
+var pingInterval = 6000 * 5;
+var timeoutId = setTimeout(pingContainer, pingInterval);
+function pingContainer() {
     requestify.get('api/ping').then(function(res) {
         logger.debug('ping container: ', res.body);
     });
-}, 6000 * 5);
+    
+    timeoutId = setTimeout(pingContainer, pingInterval);
+};
