@@ -211,7 +211,8 @@ redisAdapter.addSentinelMonitor = function(resId, procId, sentinelData) {
     var allConfigOptions = {
         'down-after-milliseconds': 5000,
         'failover-timeout': 5000,
-        'parallel-syncs': 1
+        'parallel-syncs': 1,
+        'client-reconfig-script': '/usr/local/bin/reconfigure'
     };
 
     async.series([
@@ -227,9 +228,6 @@ redisAdapter.addSentinelMonitor = function(resId, procId, sentinelData) {
         function(callback) {
             // SET MASTER AUTH
             sentinelCli(callback, ['set', sentinelData.name, 'auth-pass', sentinelData.pwd]);
-        },
-        function(cb) {
-            sentinelCli(cb, ['set', 'client-reconfig-script', sentinelData.name, '/usr/local/bin/reconfigure']);
         },
         function(callback) {
             // Config .....
