@@ -228,6 +228,9 @@ redisAdapter.addSentinelMonitor = function(resId, procId, sentinelData) {
             // SET MASTER AUTH
             sentinelCli(callback, ['set', sentinelData.name, 'auth-pass', sentinelData.pwd]);
         },
+        function(cb) {
+            sentinelCli(cb, ['set', 'client-reconfig-script', sentinelData.name, '/usr/local/bin/reconfigure']);
+        },
         function(callback) {
             // Config .....
             var configs = [];
