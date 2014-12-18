@@ -4,7 +4,7 @@ PUBLIC_IP=$(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print
 TWEMPROXY_PORT=$2
 TWEMPROXY_STATS_PORT=$3
 ETCD_HOST=$PUBLIC_IP:4001
-# ETCD_HOST=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' etcd):5001
+# ETCD_HOST=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' etcd):4001
 
 if [ "$#" = "3" ]; then
         #etcdctl set /services/twemproxy/port $TWEMPROXY_PORT

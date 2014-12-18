@@ -323,6 +323,7 @@ redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
                     'Volumes': {},
                     'VolumesFrom': ''
                 };
+                logger.debug('create container option: ', optsc);
     
                 docker.createContainer(optsc, cb);
             },
@@ -338,7 +339,7 @@ redisAdapter.createTwemProxy = function(resId, procId, port, statPort) {
                         }]
                     }
                 };
-                logger.error(startOptions);
+                logger.debug('start contianer options: ', startOptions);
     
                 container.start(startOptions, function(err, data) {
     
