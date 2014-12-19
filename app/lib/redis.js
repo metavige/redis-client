@@ -99,7 +99,7 @@ function redisCli(callback, port, auth, params) {
     // logger.debug('redis-cli params:', redisCliParams);
 
     spawnCommand('redis-cli', redisCliParams, function(code, result) {
-        callback((code == 0 && /^OK/.test(result.out)) ? null : result.err, result);
+        callback((code === 0 && /^OK/.test(result.out)) ? null : result.err, result);
     });
 }
 
@@ -146,13 +146,16 @@ redisAdapter.newRedis = function(options) {
     var cmdArgs = ['--port', options.port,
         '--maxmemory', options.mem + 'mb',
         '--requirepass', options.pwd,
-        '--daemonize', 'yes'
+        '--daemonize', 'yes',
+        '--pidfile', '/var/run/redis/redis-server-' + options.id + '.pid',
+        '--logfile', '/var/log/redis/redis-' + options.id + '.log',
+        '--dbfilename', options.id + '.rdb'
     ];
 
     async.series([
         function(callback) {
             spawnCommand('redis-server', cmdArgs, function(code, result) {
-                if (code == 0) {
+                if (code === 0) {
                     logger.info('create redis server success !!!');
                     callback(null);
                 }
@@ -165,7 +168,7 @@ redisAdapter.newRedis = function(options) {
                 var sendData = {
                     id: options.id
                 };
-                if (error == null) {
+                if (error === null) {
                     var redisInfoData = redisInfo.parse(result.out);
                     logger.debug('parse redisInfo: ', JSON.stringify(
                         redisInfoData));
@@ -185,7 +188,7 @@ redisAdapter.newRedis = function(options) {
         }
     ], function(err, result) {
         // Report sentinel setting OK!
-        if (err == null) {
+        if (err === null) {
             logger.info('redis-server create ok !!!');
         }
     });
