@@ -7,7 +7,9 @@ MEMORY_SIZE=$4
 
 if [ "$#" = "4" ]; 
 then
-    curl -L localhost:3000/redis -H "Content-Type: application/json" -XPOST -d '{ "id":"$PROC_ID", "port": $PORT, "pwd": "$AUTH_PWD", "mem": $MEMORY_SIZE }'
+    POST_DATA = "{ 'id': '$PROC_ID', 'port': $PORT, 'pwd': '$AUTH_PWD', 'mem': $MEMORY_SIZE }"
+
+    curl -L localhost:3000/redis -H "Content-Type: application/json" -XPOST -d $POST_DATA
 else
     echo "Usage: start-redis [Process ID] [Port] [Authorize Password] [Memory Size]"
 fi
