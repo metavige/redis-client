@@ -149,6 +149,7 @@ redisAdapter.newRedis = function(options) {
         '--daemonize', 'yes',
         '--pidfile', '/var/run/redis/redis-server-' + options.id + '.pid',
         '--logfile', '/var/log/redis/redis-' + options.id + '.log',
+        '--dir', '/var/lib/redis',
         '--dbfilename', options.id + '.rdb'
     ];
 
