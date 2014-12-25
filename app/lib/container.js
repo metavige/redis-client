@@ -204,7 +204,7 @@ function pingContainer() {
  * @param {[type]}   data     [description]
  */
 function callContainerApi(apiUri, method, data) {
-    data = {} || data;
+    data = data || {};
     method = method.toLowerCase();
     var delegateUri = config.settings.apiRoot + apiUri;
 
