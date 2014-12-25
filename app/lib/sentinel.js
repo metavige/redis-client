@@ -10,7 +10,7 @@
 var path = require('path'),
     Sentinel = require('node-sentinel'),
     logger = require(path.join(__dirname, './logger')),
-    config = require(path.join(__dirname, 'lib/config'));
+    config = require(path.join(__dirname, './config'));
 
 var sentinelMonitor = module.exports = {
     instance: null
