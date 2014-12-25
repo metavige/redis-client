@@ -4,4 +4,5 @@ if [ ! -d "/var/log/redisAgent" ];then
     mkdir /var/log/redisAgent
 fi
 
-nodemon -w app -e js -q --ignore logs/ -V app/app.js
+# nodemon -w app -e js -q --ignore logs,.git -V app/app.js
+nodemon app/app.js
