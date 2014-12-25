@@ -12,6 +12,10 @@ var path = require('path'),
     logger = require(path.join(__dirname, './logger')),
     config = require(path.join(__dirname, 'lib/config'));
 
+var sentinelMonitor = module.exports = {
+    instance: null
+};
+
 if (config.isProxy()) {
 
     var containerApi = require(path.join(__dirname, './container'));
@@ -41,4 +45,5 @@ if (config.isProxy()) {
         containerApi.switchMaster(event.details);
     });
 
+    sentinelMonitor.instance = sentinel;
 }
