@@ -6,6 +6,7 @@ var express = require('express'),
     app = express();
 
 var logger = require(path.join(__dirname, 'lib/logger'));
+var config = require(path.join(__dirname, 'lib/config'));
 
 // ==============================
 // start setting expressjs
@@ -15,8 +16,12 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 app.use('/redis', getRouter('redisRoute'));
-app.use('/sentinel', getRouter('sentinelRoute'));
-app.use('/proxy', getRouter('proxyRoute'));
+
+// 設定只有 Proxy Container 才提供 sentinel 以及 proxy 的設定 API
+if (config.isProxy()) {
+    app.use('/sentinel', getRouter('sentinelRoute'));
+    app.use('/proxy', getRouter('proxyRoute'));
+}
 
 // Simple Ping/Pong
 // respond with "Hello World!" on the homepage

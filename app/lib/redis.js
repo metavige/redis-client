@@ -7,10 +7,7 @@
  */
 
 var path = require('path'),
-    exec = require('child_process').exec,
     spawn = require('child_process').spawn,
-    RedisSentinel = require('redis-sentinel-client'),
-    util = require('util'),
     async = require('async'),
     _ = require("underscore"),
     redisInfo = require('redis-info'),

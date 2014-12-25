@@ -1,9 +1,7 @@
 // var redis = require('redis');
 var express = require('express'),
     path = require('path'),
-    async = require('async'),
-    router = express.Router(),
-    _ = require('underscore');
+    router = express.Router();
 
 // Load redisAdapter
 var redisAdapter = require(path.join(__dirname, '/../lib/redis'));

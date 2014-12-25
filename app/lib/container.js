@@ -180,3 +180,10 @@ function pingContainer() {
       logger.error('send ping error!', ex);
     }
 };
+
+/**
+ * 
+ */
+function callContainerApi(apiUri, method, data, callback) {
+    
+}

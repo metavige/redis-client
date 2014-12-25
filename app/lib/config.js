@@ -29,4 +29,8 @@ config.saveInstance = function(instInfo) {
     // TODO: save instance data to instance.json
 };
 
+config.isProxy = function() {
+    return (config.settings.container.type === 'proxy');
+}
+
 module.exports = config;
