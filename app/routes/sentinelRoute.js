@@ -109,6 +109,6 @@ router.route('/')
 
 var sentinelMonitor = require(path.join(__dirname,
     '/../lib/sentinel'));
-logger.debug('init sentinel monitor.....', sentinelMonitor.instance);
+logger.debug('init sentinel monitor.....', (sentinelMonitor.instance != null));
 
 module.exports = router;
