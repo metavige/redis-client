@@ -12,6 +12,7 @@ logger.debug('start agent.....');
 try {
     // console.log(__dirname);
     var data = fs.readFileSync(path.join(__dirname, '/../../conf/config.json'), 'utf8');
+    console.log('read config.json', data);
     config.settings = JSON.parse(data.toString());
 } catch (err) {
     logger.error(err);
