@@ -16,10 +16,11 @@ var logger = require(path.join(__dirname, '/logger'));
 var redisContainerApi = module.exports = {};
 
 var containersApi = {
-    register: config.settings.apiRoot + '/api/containers',
-    redisInfo: config.settings.apiRoot + '/api/containers/%s/process/%s',
-    updateSentinelStatus: config.settings.apiRoot + '/api/containers/%s/sentinels/%s',
-    updateProxyStatus: config.settings.apiRoot + '/api/containers/%s/proxies/%s',
+    register: '/api/containers',
+    redisInfo: '/api/containers/%s/process/%s',
+    updateSentinelStatus: '/api/containers/%s/sentinels/%s',
+    updateProxyStatus: '/api/containers/%s/proxies/%s',
+    switchMaster: '/api/redisInfos/%s/switchMaster'
 };
 
 /**
@@ -28,11 +29,12 @@ var containersApi = {
 redisContainerApi.registerContainer = function() {
     logger.info('register contianer.....', containersApi.register);
 
-    requestify
-        .post(containersApi.register, {
-            hostname: require('os').hostname(),
-            type: config.settings.type
-        })
+    var containerRegisterData = {
+        hostname: require('os').hostname(),
+        type: config.settings.type
+    };
+
+    callContainerApi(containersApi.register, 'POST', containerRegisterData)
         .then(function(res) {
             try {
                 var statusCode = res.getCode();
@@ -85,19 +87,18 @@ redisContainerApi.sendRedisInfo = function(redisInfo) {
             redisInfo.id);
 
         logger.debug('call redis update status api: ', url);
-        requestify
-            .put(url, redisInfo)
-            .then(function(res) {
-                logger.debug(res);
-                try {
-                    logger.debug("call sendRedisInfo:", res.getCode());
-                    // logger.debug('response:', res.getBody());
-                    // logger.debug(res.body);
-                } catch (ex) {
-                    logger.error('sendRedisInfo: ', ex);
-                    // TODO:
-                }
-            });
+
+        callContainerApi(url, 'PUT', redisInfo).then(function(res) {
+
+            try {
+                logger.debug("call sendRedisInfo:", res.getCode());
+                // logger.debug('response:', res.getBody());
+                // logger.debug(res.body);
+            } catch (ex) {
+                logger.error('sendRedisInfo: ', ex);
+                // TODO:
+            }
+        });
     }
 };
 
@@ -113,19 +114,18 @@ redisContainerApi.updateSentinelStatus = function(resId, procId, sentinelStatus)
         procId);
 
     logger.debug('update sentinel status: ', url);
-    requestify
-        .put(url, sentinelStatus)
-        .then(function(res) {
-            logger.debug(res);
-            try {
-                logger.debug("call update sentinel:", res.getCode());
-                // logger.debug('response:', res.getBody());
-                // logger.debug(res.body);
-            } catch (ex) {
-                logger.error('update sentinel status: ', ex);
-                // TODO:
-            }
-        });
+
+    callContainerApi(url, 'PUT', sentinelStatus).then(function(res) {
+
+        try {
+            logger.debug("call update sentinel:", res.getCode());
+            // logger.debug('response:', res.getBody());
+            // logger.debug(res.body);
+        } catch (ex) {
+            logger.error('update sentinel status: ', ex);
+            // TODO:
+        }
+    });
 
 };
 
@@ -143,20 +143,33 @@ redisContainerApi.updateProxyStatus = function(resId, procId, status) {
         procId);
 
     logger.debug('update proxy status: ', url);
-    requestify
-        .put(url, status)
+    callContainerApi(url, 'PUT', status).then(function(res) {
+
+        try {
+            logger.debug("call update proxy:", res.getCode());
+            // logger.debug('response:', res.getBody());
+            // logger.debug(res.body);
+        } catch (ex) {
+            logger.error('update proxy status: ', ex);
+            // TODO:
+        }
+    });
+};
+
+/**
+ * Call ContainerApi, trigger switch redis master
+ * @param {[type]} eventData [description]
+ */
+redisContainerApi.switchMaster = function(eventData) {
+
+    var url = util.format(containersApi.switchMaster, eventData['master-name']);
+    logger.info('Call switch master url:', url);
+
+    callContainerApi(url, 'POST', eventData)
         .then(function(res) {
             logger.debug(res);
-            try {
-                logger.debug("call update proxy:", res.getCode());
-                // logger.debug('response:', res.getBody());
-                // logger.debug(res.body);
-            } catch (ex) {
-                logger.error('update proxy status: ', ex);
-                // TODO:
-            }
         });
-};
+}
 
 if (_.isUndefined(config.settings.container)) {
     redisContainerApi.registerContainer();
@@ -165,25 +178,42 @@ if (_.isUndefined(config.settings.container)) {
 // 20141210 add container api ping, for wake up container api
 var pingInterval = 6000 * 5;
 var timeoutId = setTimeout(pingContainer, pingInterval);
+
 function pingContainer() {
     try {
-      requestify.get(config.settings.apiRoot + '/api/ping').then(function(res) {
-          var statusCode = res.getCode();
-          if (statusCode != 200) {
-            logger.error('ping container error: ', statusCode, res.body);
-          }
+        callContainerApi('/api/ping', 'GET').then(function(res) {
+            var statusCode = res.getCode();
+            if (statusCode != 200) {
+                logger.error('ping container error: ', statusCode, res.body);
+            }
 
-          timeoutId = setTimeout(pingContainer, pingInterval);
-      });
-    }
-    catch(ex) {
-      logger.error('send ping error!', ex);
+            timeoutId = setTimeout(pingContainer, pingInterval);
+        });
+    } catch (ex) {
+        logger.error('send ping error!', ex);
     }
 };
 
 /**
- * 
+ * ContainerApi Delegate
+ *
+ * @param {[type]}   apiUri   [description]
+ * @param {[type]}   method   [description]
+ * @param {[type]}   data     [description]
  */
-function callContainerApi(apiUri, method, data, callback) {
-    
+function callContainerApi(apiUri, method, data) {
+    data = {} || data;
+    method = method.toLowerCase();
+    var delegateUri = config.settings.apiRoot + apiUri;
+
+    var delegateMethod = requestify[method];
+    if (delegateMethod == null) {
+        throw new Error(method + ' not exist!');
+    }
+
+    if ('get' === method) {
+        return delegateMethod.call(null, delegateUri);
+    } else {
+        return delegateMethod.call(null, delegateUri, data);
+    }
 }
