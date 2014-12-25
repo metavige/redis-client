@@ -36,6 +36,7 @@ redisContainerApi.registerContainer = function() {
 
     callContainerApi(containersApi.register, 'POST', containerRegisterData)
         .then(function(res) {
+            logger.debug(res);
             try {
                 var statusCode = res.getCode();
                 if (statusCode == 404) {
@@ -172,6 +173,7 @@ redisContainerApi.switchMaster = function(eventData) {
 }
 
 if (_.isUndefined(config.settings.container)) {
+    logger.debug('Prepare register container.....');
     redisContainerApi.registerContainer();
 }
 
