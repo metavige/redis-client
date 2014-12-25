@@ -31,7 +31,7 @@ config.saveInstance = function(instInfo) {
 };
 
 config.isProxy = function() {
-    return (config.settings.container.type === 'proxy');
+    return (config.settings.type === 'proxy');
 }
 
 module.exports = config;
