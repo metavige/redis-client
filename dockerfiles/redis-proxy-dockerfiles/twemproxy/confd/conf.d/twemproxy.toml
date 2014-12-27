@@ -1,0 +1,9 @@
+[template]
+src = "twemproxy.tmpl"
+dest = "/twemproxy.yaml"
+keys = [
+  "/services/redis",
+  "/services/redis_auth",
+]
+reload_cmd = "/usr/bin/supervisorctl restart twemproxy"
+check_cmd = "/twemproxy -t -c {{ .src }}"

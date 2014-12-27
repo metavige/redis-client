@@ -1,0 +1,12 @@
+situ:
+  listen: 0.0.0.0:6000
+  hash: fnv1a_64
+  hash_tag: "P:"
+  distribution: ketama
+  auto_eject_hosts: false
+  timeout: 1000
+  redis: true
+  redis_auth: {{getv "/services/redis_auth"}} 
+  servers:
+  {{range getvs "/services/redis/*"}}  - {{.}}:1
+  {{end}}
