@@ -1,16 +1,16 @@
 // 載入 gulp 相關的 module
 var gulp = require('gulp');
 var mocha = require('gulp-mocha');
-var batch = require('gulp-batch');
+//var batch = require('gulp-batch');
 var clean = require('gulp-rimraf');
-var browserify = require('browserify');
-var source = require('vinyl-source-stream');
-var livereload = require('gulp-livereload');
-var notify = require('gulp-notify');
-var fs = require('fs');
+//var browserify = require('browserify');
+//var source = require('vinyl-source-stream');
+//var livereload = require('gulp-livereload');
+//var notify = require('gulp-notify');
+//var fs = require('fs');
 
 // 環境變數
-var env = 'prod'; // dev||prod
+//var env = 'prod'; // dev||prod
 
 // var live = livereload();
 // livereload.listen();
