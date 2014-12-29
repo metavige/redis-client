@@ -5,7 +5,9 @@ conf/instance.json
 conf/config.json
 conf
 npm-debug.log
-.c9
 dump.rdb
+.c9
 .ieda
 .idea
+.settings
+.project

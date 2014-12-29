@@ -7,8 +7,7 @@
 // =======================================================
 // Module dependencies
 // =======================================================
-var requestify = require('requestify'),
-    util = require('util'),
+var util = require('util'),
     path = require('path'),
     _ = require('underscore');
 
@@ -16,15 +15,22 @@ var BaseCommand = require('./baseCommand');
 
 (function(){
 
-    function RegisterCommand() {
+    function RegisterCommand(agent) {
         this.apiUrl = '';
+        this.method = 'POST';
 
+        this.setAgent(agent);
     }
+
+    RegisterCommand.prototype.execute = function() {
+
+
+    };
 
     module.exports = function(agent) {
 
         util.inherits(RegisterCommand, BaseCommand);
 
-        return RegisterCommand;
+        return new RegisterCommand(agent);
     };
 })();

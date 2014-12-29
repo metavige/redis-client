@@ -11,9 +11,18 @@ var requestify = require('requestify'),
 (function() {
 
     // Constructor
-    function BaseCommand(agent) {
+    function BaseCommand() {}
+
+    BaseCommand.prototype.execute = function() {
+        // 1. Get Url
+        // 2. Get Data
+    };
+
+    BaseCommand.prototype.setAgent = function(agent) {
         this.agent = agent;
-    }
+    };
+
+
 
     /**
      * ContainerApi Delegate

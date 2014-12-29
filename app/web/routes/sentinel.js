@@ -77,26 +77,14 @@ var path = require('path'),
 
                     // Final add sentinel monitor settings
                     function(callback) {
-                        try {
-                            // redisAdapter.addSentinelMonitor(sentinelData.name,
-                            //     sentinelData.procId,
-                            //     sentinelData);
 
-                            // trigger sentinel monitor event
-                            webApp.emit('sentinel.monitor',
-                                sentinelData.name,
-                                sentinelData.procId,
-                                sentinelData);
+                        // trigger sentinel monitor event
+                        webApp.emit('sentinel.monitor',
+                            sentinelData.name,
+                            sentinelData.procId,
+                            sentinelData);
 
-                            res.status(200).end();
-                        } catch (ex) {
-                            // logger.error('addSentinelMonitor error: ', ex);
-                            webApp.emit('error', 'addSentinel', ex);
-
-                            res.status(400).send({
-                                message: ex.message
-                            });
-                        }
+                        res.status(200).end();
 
                         callback(null); // end flow
                     }

@@ -10,12 +10,15 @@
 var router = require('express').Router(),
     path = require('path'),
     async = require('async'),
-    _ = require('underscore');
-;
+    _ = require('underscore');;
 
 (function() {
 
     module.exports = function(webApp) {
+
+        // console.log('webApp:', webApp);
+        var logger = webApp.logger,
+            validate = webApp.validate;
 
         /* define redis api */
         router.route('/')
@@ -29,51 +32,45 @@ var router = require('express').Router(),
                     }
                  */
 
-                webApp.logger.debug('Redis Api Request Body: ', req.body);
+                logger.debug('Redis Api Request Body: ', req.body);
 
-                var redisSettings = req.body;
+                var r = req.body;
 
                 // Do flow
+                // TODO: 把檢查的部份，要做成 util methods
                 async.series([
-                        // Check id
-                        function(callback) {
-                            webApp.guardCheck(callback,
-                                _.isUndefined, redisSettings.id, 'id is undefined');
+                        function(cb) {
+                            validate(function() {
+                                return _.isUndefined(r.id);
+                            }, 'id is undefined', cb);
                         },
-                        // Check port
-                        function(callback) {
-                            webApp.guardCheck(callback,
-                                _.isNaN, redisSettings.port, 'port is NaN');
+                        function(cb) {
+                            validate(function() {
+                                return _.isUndefined(r.port) || _.isNaN(r.port);
+                            }, 'port is undefined or NaN', cb);
                         },
-                        // Check memory
-                        function(callback) {
-                            webApp.guardCheck(callback,
-                                _.isNaN, redisSettings.mem, 'mem is NaN');
+                        function(cb) {
+                            validate(function() {
+                                return _.isUndefined(r.mem) || _.isNaN(r.mem);
+                            }, 'mem is undefined or NaN', cb);
                         },
-                        // Check password
-                        function(callback) {
-                            webApp.guardCheck(callback,
-                                _.isUndefined, redisSettings.pwd, 'pwd is undefined');
+                        function(cb) {
+                            validate(function() {
+                                return _.isUndefined(r.pwd);
+                            }, 'pwd is undefined', cb);
                         }
                     ],
                     function(error, result) {
-                        if (error != null) return;
-                        // Final add sentinel monitor settings
-                        try {
-                            //redisAdapter.newRedis(req.body);
-
-                            // trigger agent to report redis created
-                            webApp.emit('redis.instance.created', req.body);
-
-                            res.status(200).send(redisSettings);
-                        } catch (ex) {
-                            // agent.logger.error('newRedis error: ', ex);
-                            webApp.emit('error', 'newRedis error', ex);
-
-                            res.status(400).send({
-                                message: ex.message
-                            });
+                        if (error != null) {
+                            res.status(400).send(error);
+                            return;
                         }
+                        //redisAdapter.newRedis(req.body);
+
+                        // trigger agent to report redis created
+                        webApp.emit('instance.create', req.body);
+
+                        res.status(200).end();
                         // end flow
                     }
                 );

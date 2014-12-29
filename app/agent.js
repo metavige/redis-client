@@ -9,9 +9,13 @@
 // =======================================================
 var path = require('path'),
     util = require('util'),
-    EventEmitter = require('events').EventEmitter,
+    EventEmitter2 = require('eventemitter2').EventEmitter2,
+    // EventEmitter = require('events').EventEmitter,
     Config = require('./base/config'),
-    AgentWeb = require('./web/index');
+    AgentWeb = require('./web/index'),
+    RedisManager = require('./redis/manager'),
+    ContainerProxy = require('./containers/proxy'),
+    _ = require('underscore');
 
 // =======================================================
 // Redis Agent
@@ -20,10 +24,19 @@ var path = require('path'),
 
     var RedisAgent = function() {
 
-        var _config = new Config(this),
-            _web = new AgentWeb(this);
+        // Call EventEmitter2 ctor
+        RedisAgent.super_.call(this, {
+            wildcard: true,
+            delimiter: '::',
+            newListener: true
+        });
 
-        this.logger = require('./base/logger');
+        var logger = this.logger = require('./base/logger');
+
+        var _config = new Config(this),
+            _web = new AgentWeb(this),
+            _manager = new RedisManager(this),
+            _containerProxy = new ContainerProxy(this);
 
         // =======================================================
         // Internal Methods
@@ -56,17 +69,44 @@ var path = require('path'),
             return _config.isProxy();
         };
 
-        this.on('error', function()) {
+        // =======================================================
+        // Events
+        // =======================================================
+        this.on('error', function() {
             this.logger.error.call(this, '[ERROR]', arguments);
-        };
+            // TODO: 錯誤處理～
+        });
 
-        // =======================================================
-        // Public Methods
-        // =======================================================
+        // this.on('redis::instance.create', function() {
+        //     this.logger.debug('[AGENT] trigger redis event: ', arguments[0]);
+        // });
+
+        this.on('redis::*', function() {
+
+            var args = _.map(arguments);
+            // console.log('trigger redis.* :', arguments);
+            // listern all redis.* events
+            // console.log('[AGENT] trigger redis event: ',
+            //     this.event,
+            //     args);
+            args.unshift(this.event.replace('redis::', ''));
+            console.log('[ARGS]', args);
+
+            _manager.emit.apply(_manager, args);
+            // delegate _apdater emit
+            // _adapter.emit.apply(_adapter, arguments);
+        });
+
+        this.on('container::*', function(evtName) {
+            this.logger.debug('[AGENT] trigger container event: ', evtName);
+
+            // delegate _containerProxy emit
+            _containerProxy.emit.apply(_containerProxy, arguments);
+        });
     };
 
     // RedisAgent extend EventEmitter
-    util.inherits(RedisAgent, EventEmitter);
+    util.inherits(RedisAgent, EventEmitter2);
 
     // =======================================================
     // module exports

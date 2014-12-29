@@ -9,7 +9,9 @@
 // =======================================================
 var express = require('express'),
     path = require('path'),
-    bodyParser = require('body-parser');
+    bodyParser = require('body-parser'),
+    logger = require(path.join(__dirname, '../base/logger')),
+    _ = require('underscore');
 
 // =======================================================
 // Express Web
@@ -21,6 +23,8 @@ var express = require('express'),
         var _app = express(),
             _this = this;
 
+        this.agent = agent;
+        this.logger = logger;
         // =======================================================
         // Public Methods
         // =======================================================
@@ -34,8 +38,8 @@ var express = require('express'),
             // start setting expressjs
             // ==============================
             _app.use(bodyParser.urlencoded({
-                    extended: false
-                }));
+                extended: false
+            }));
             _app.use(bodyParser.json());
             _app.use(function(req, res, next) {
                 // a middle function, for activity check
@@ -56,9 +60,9 @@ var express = require('express'),
 
             this.server = _app.listen(3000);
 
-            agent.logger.info('============================');
-            agent.logger.info(' Listening on port 3000... ');
-            agent.logger.info('============================');
+            logger.info('============================');
+            logger.info(' Listening on port 3000... ');
+            logger.info('============================');
         };
 
         this.guardCheck = function(callback, checkFunc, paramData, messageGetter) {
@@ -66,17 +70,15 @@ var express = require('express'),
             if (checkFunc.call(null, paramData) == true) {
                 var message = _.isFunction(messageGetter) ? messageGetter.call(null,
                     paramData) : messageGetter;
-                res.status(400).send({
-                    message: message
-                });
-                return;
+
+                callback(message);
             }
             callback(null);
         };
 
-        // delegate emit function to agent.emit
-        this.emit = agent.emit;
-        this.logger = agent.logger;
+        this.validate = function(validator, message, cb) {
+            cb((validator.call(null)) ? message : null);
+        };
 
         // =======================================================
         // Private Methods
@@ -87,7 +89,7 @@ var express = require('express'),
          * @param {String} routePath
          */
         function addRoute(routePath) {
-            agent.logger.debug("add router [" + routePath + '] ..... ');
+            logger.debug("add router [" + routePath + '] ..... ');
 
             _app.use(routePath, getRouter(routePath));
         }
@@ -101,6 +103,17 @@ var express = require('express'),
             return require(path.join(__dirname, 'routes' + routeName))(_this);
         }
     }
+
+    // delegate agent emit function.....
+    RedisWeb.prototype.emit = function() {
+        var args = _.map(arguments);
+
+        logger.debug('[REDIS_WEB] trigger ', args);
+        args[0] = 'redis::' + args[0];
+        console.log(args);
+
+        this.agent.emit.apply(this.agent, args);
+    };
 
     module.exports = RedisWeb;
 })();

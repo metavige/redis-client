@@ -1,5 +1,3 @@
-// var redis = require('redis');
-
 /**
  * api /proxy Route
  *
@@ -30,7 +28,7 @@ var router = require('express').Router();
                 webApp.logger.debug('Proxy Api Request Body: ', proxyData);
 
                 // trigger agent to create proxy
-                webApp.emit('redis.proxy.create',
+                webApp.emit('proxy.create',
                     proxyData.resId,
                     proxyData.id,
                     proxyData.port,
