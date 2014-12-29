@@ -20,8 +20,7 @@ var util = require('util'),
 
         Adapter.super_.call(this, {
             wildcard: true,
-            delimiter: '::',
-            newListener: true
+            delimiter: '::'
         });
         // =======================================================
         // Fields
@@ -112,7 +111,7 @@ var util = require('util'),
         };
 
 
-        this.callContainerApi = function() {
+        this.api = function() {
             var args = _.map(arguments);
             args[0] = 'container::' + args[0];
 
@@ -126,10 +125,16 @@ var util = require('util'),
         // =======================================================
         this.onAny(function() {
 
-            console.log('[MANAGER]', this.event, _.map(arguments));
-
             var args = _.map(arguments),
                 cmdName = this.event.replace('.', '/');
+
+            console.log('[MANAGER]', this.event, args);
+
+            if (this.event == 'error') {
+                args.unshift(this.event);
+                agent.emit.apply(agent, args);
+                return;
+            }
 
             console.log('[MANAGER]', args);
 
@@ -139,7 +144,7 @@ var util = require('util'),
                 var cmd = new Command(_self);
                 cmd.handle.apply(cmd, args);
             } catch (ex) {
-                this.agent.emit('error', cmdName, ex);
+                agent.emit('error', cmdName, ex);
             }
         });
 
@@ -179,12 +184,12 @@ var util = require('util'),
         //     }
         // });
 
-        this.on('error', function() {
-            var args = _map(arguments);
-            args.unshift('error');
-
-            agent.emit.apply(agent, args);
-        });
+        // this.on('error', function() {
+        //     var args = _map(arguments);
+        //     args.unshift('error');
+        //
+        //     agent.emit.apply(agent, args);
+        // });
         // =======================================================
         // Internal Methods
         // =======================================================

@@ -19,9 +19,34 @@ var requestify = require('requestify'),
 
     function Proxy(agent) {
 
-        var _agent = agent;
+        var _agent = agent,
+            _self = this;
 
+        Proxy.super_.call(this, {
+            wildcard: true,
+            delimiter: '::'
+        });
 
+        this.onAny(function(data, cb) {
+
+            try {
+                var args = _.map(arguments),
+                    cmdName = './' + this.event.replace('.', '/');
+
+                // Call Command .....
+                CreateCommand(cmdName, _self).handle(data, cb);
+            } catch (ex) {
+                // error raise
+                agent.emit('error', this.event, args);
+            }
+        });
+
+        function CreateCommand(cmdName) {
+            agent.logger.debug('Create Proxy Command: ', cmdName);
+            var Command = require(path.join(__dirname, cmdName));
+
+            return new Command(_self);
+        }
     }
 
     util.inherits(Proxy, EventEmitter2);

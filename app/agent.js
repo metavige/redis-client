@@ -27,8 +27,7 @@ var path = require('path'),
         // Call EventEmitter2 ctor
         RedisAgent.super_.call(this, {
             wildcard: true,
-            delimiter: '::',
-            newListener: true
+            delimiter: '::'
         });
 
         var logger = this.logger = require('./base/logger');
@@ -42,15 +41,6 @@ var path = require('path'),
         // Internal Methods
         // =======================================================
 
-        /**
-         * check agent environment is ready?
-         */
-        var _checkEnvironment = function() {
-            if (_config.container == null) {
-                // call containerApi to register
-            }
-        };
-
         // =======================================================
         // Public Methods
         // =======================================================
@@ -58,8 +48,6 @@ var path = require('path'),
 
             // 初始化 config
             _config.init();
-
-            _checkEnvironment();
 
             // 初始化 web，開始接聽 API 要求
             _web.init();
@@ -97,11 +85,15 @@ var path = require('path'),
             // _adapter.emit.apply(_adapter, arguments);
         });
 
-        this.on('container::*', function(evtName) {
-            this.logger.debug('[AGENT] trigger container event: ', evtName);
+        this.on('container::*', function() {
+            var args = _.map(arguments);
+
+            //this.logger.debug('[AGENT] trigger container event: ', this.event);
+            args.unshift(this.event.replace('container::', ''));
+            console.log('[AGENT][CONTAINER]', args);
 
             // delegate _containerProxy emit
-            _containerProxy.emit.apply(_containerProxy, arguments);
+            _containerProxy.emit.apply(_containerProxy, args);
         });
     };
 

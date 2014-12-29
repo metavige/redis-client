@@ -8,13 +8,15 @@
 // Module dependencies
 // =======================================================
 var fs = require('fs'),
-    path = require('path');
+    path = require('path'),
+    _ = require('underscore');
 
 (function() {
 
     var Config = function(agent) {
 
-        var _settings = {},
+        var _self = this,
+            _settings = {},
             configPath = path.join(__dirname, '../../conf/config.json'),
             _isContainreAgentStarted = false;
 
@@ -36,6 +38,16 @@ var fs = require('fs'),
             }
 
             agent.logger.info('config inited.....');
+
+            if (_self.container == null) {
+                // call containerApi to register
+                agent.emit('container::register', _settings,
+                    function(containerData) {
+                        agent.logger.debug('return from register container api',
+                            containerData);
+                        _self.container = containerData;
+                    });
+            }
         };
 
         this.isProxy = function() {
@@ -43,7 +55,7 @@ var fs = require('fs'),
         };
 
         this.getSetting = function() {
-
+            return _.clone(_setttings);
         };
     }
 

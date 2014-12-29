@@ -51,14 +51,14 @@ var util = require('util'),
         async.series([
             function(callback) {
                 // 呼叫命令列，建立一個新的 redis-server instance
-                _self.manager.spawnCommand('redis-server', cmdArgs, function(code,
-                    result) {
-                    if (code === 0) {
-                        logger.info('create redis server success !!!');
-                    }
+                _self.manager.spawnCommand('redis-server', cmdArgs,
+                    function(code, result) {
+                        if (code === 0) {
+                            logger.info('create redis server success !!!');
+                        }
 
-                    callback((code === 0) ? null : result);
-                });
+                        callback((code === 0) ? null : result);
+                    });
             },
             function(callback) {
                 logger.debug('update redis info status');
@@ -84,8 +84,10 @@ var util = require('util'),
                     // containerApi.sendRedisInfo(sendData);
 
                     // call container api
-                    _manager.callContainerApi('redis.created',
-                        sendData);
+                    _manager.api('redis.created', sendData,
+                        function() {
+
+                        });
 
 
                     callback(error);
