@@ -136,7 +136,7 @@ var util = require('util'),
                 return;
             }
 
-            console.log('[MANAGER]', args);
+            // console.log('[MANAGER]', args);
 
             try {
                 var Command = require('./' + cmdName);

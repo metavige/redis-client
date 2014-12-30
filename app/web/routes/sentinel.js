@@ -8,89 +8,69 @@ var path = require('path'),
 
     module.exports = function(webApp) {
 
-        router.route('/')
-            .post(function(req, res, next) {
-                /**
-                    Post Body = {
-                    name: 'sentinel monitor name (redisInfo ResId)',
-                    procId: 'containerProcess Id',
-                    ip: 'master redis host',
-                    port: 'master redis port',
-                    pwd: 'auth password',
-                    quorum: 'quorum' (default 1)
+        var logger = webApp.logger,
+            validate = webApp.validate;
+
+        function SentinelRoute(req, res, next) {
+            /**
+                Post Body = {
+                name: 'sentinel monitor name (redisInfo ResId)',
+                procId: 'containerProcess Id',
+                ip: 'master redis host',
+                port: 'master redis port',
+                pwd: 'auth password',
+                quorum: 'quorum' (default 1)
+            }
+            */
+
+            var r = req.body;
+            logger.debug('Redis Api Request Body: ', r);
+
+            // Check parameters
+            // var msgPrefix = 'Bad arguments: ';
+            // var failCallback = res.status(400).send;
+
+            // Do flow
+            async.series([
+                function(cb) {
+                    validate(function() {
+                        return _.isUndefined(r.procId);
+                    }, 'procId is undefined', cb);
+                },
+                function(cb) {
+                    validate(function() {
+                        return _.isUndefined(r.port) || _.isNaN(r.port);
+                    }, 'port is undefined or NaN', cb);
+                },
+                function(cb) {
+                    validate(function() {
+                        return _.isUndefined(r.quorum) || _.isNaN(r.quorum);
+                    }, 'quorum is undefined or NaN', cb);
+                },
+                function(cb) {
+                    var emptyStrRegEx = /^$/;
+
+                    validate(function() {
+                        return _.isUndefined(r.name) || emptyStrRegEx.test(
+                            data);
+                    }, 'name is undefined or empty', cb);
                 }
-                */
+            ], function(err, result) {
+                if (err != null) {
+                    res.status(400).send(err);
+                    return;
+                }
 
-                var sentinelData = req.body;
-                webApp.logger.debug('Redis Api Request Body: ', sentinelData);
+                // trigger sentinel monitor event
+                webApp.emit('container::sentinel.monitor',
+                    r.name, r.procId, r);
 
-                // Check parameters
-                // var msgPrefix = 'Bad arguments: ';
-                // var failCallback = res.status(400).send;
-
-                // Do flow
-                async.series([
-
-                    // Check procId
-                    function(callback) {
-                        webApp.guardCheck(callback,
-                            _.isUndefined, sentinelData.procId,
-                            'procId is undefined');
-                    },
-                    // Check name
-                    function(callback) {
-                        webApp.guardCheck(callback,
-                            _.isUndefined, sentinelData.name,
-                            'name is undefined');
-                    },
-                    // Check port
-                    function(callback) {
-                        var emptyStrRegEx = /^$/;
-
-                        webApp.guardCheck(callback,
-                            function(data) {
-                                return emptyStrRegEx.test(data);
-                            }, sentinelData.name, 'name is empty');
-                    },
-                    // Check port
-                    function(callback) {
-                        webApp.guardCheck(callback,
-                            _.isUndefined, sentinelData.port,
-                            'port is undefined');
-                    },
-                    // Check port
-                    function(callback) {
-                        webApp.guardCheck(callback,
-                            _.isNaN, sentinelData.port, 'port is NaN');
-                    },
-                    // Check quorum
-                    function(callback) {
-                        webApp.guardCheck(callback,
-                            _.isUndefined, sentinelData.quorum,
-                            'quorum is undefined');
-                    },
-                    // Check quorum
-                    function(callback) {
-                        webApp.guardCheck(callback,
-                            _.isNaN, sentinelData.quorum, 'quorum is NaN');
-                    },
-
-                    // Final add sentinel monitor settings
-                    function(callback) {
-
-                        // trigger sentinel monitor event
-                        webApp.emit('sentinel.monitor',
-                            sentinelData.name,
-                            sentinelData.procId,
-                            sentinelData);
-
-                        res.status(200).end();
-
-                        callback(null); // end flow
-                    }
-                ]);
-
+                res.status(200).end();
             });
+        }
+
+        router.route('/').post(SentinelRoute);
+
         return router;
     };
 

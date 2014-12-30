@@ -19,11 +19,12 @@ var util = require('util'),
         this.manager = manager;
     }
 
-    RedisCreateCommand.prototype.handle = function(options) {
+    RedisCreateCommand.prototype.handle = function(options, cb) {
 
         var _self = this,
             _manager = this.manager,
             logger = this.manager.logger;
+
         /** options sample:
         {
             id: 'containerProcessId',
@@ -83,12 +84,8 @@ var util = require('util'),
                     }
                     // containerApi.sendRedisInfo(sendData);
 
-                    // call container api
-                    _manager.api('redis.created', sendData,
-                        function() {
-
-                        });
-
+                    // 建立完成之後，呼叫 Api 回寫狀態
+                    _manager.api('instance.created', sendData, callback);
 
                     callback(error);
                 }, options.port, options.pwd, ['info']);
@@ -97,6 +94,12 @@ var util = require('util'),
             // Report sentinel setting OK!
             if (err != null) {
                 _self.manager.emit('error', 'create redis', result);
+            }
+
+            // 20141230 Ricky 加上一個 cb 回應
+            // 為了 restart.js 做 async 處理用
+            if (cb != null) {
+                cb(err, result);
             }
         });
     }

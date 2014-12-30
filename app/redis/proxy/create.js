@@ -33,11 +33,6 @@ var util = require('util'),
         this.manager = manager;
     }
 
-    ProxyCreateCommand.prototype.updateStatus = function() {
-
-        this.manager.callContainerApi('proxy.statusUpdate', resId, procId, result);
-    };
-
     ProxyCreateCommand.prototype.handle = function(resId, procId, port, statPort) {
 
         var logger = this.manager.logger,
@@ -100,8 +95,7 @@ var util = require('util'),
                 logger.info('after start a new twemproxy.....');
 
                 if (err != null) {
-                    logger.error('start container error!!!', err);
-
+                    // logger.error('start container error!!!', err);
                     result = {
                         code: -1,
                         out: '',
@@ -110,13 +104,16 @@ var util = require('util'),
                         args: []
                     };
                     // 做個錯誤記錄
-                    _self.manager.emit('error', 'redis proxy create', err, result);
-                    // containerApi.updateProxyStatus(resId, procId,
-                    //     result);
+                    _self.manager.emit('error', 'ProxyCreateCommand', err);
                 }
 
                 logger.debug('start container result: ', result);
-                _self.updateStatus(resId, procId, result);
+
+                _self.manager.api('proxy.statusUpdate', {
+                    id: procId,
+                    resId: resId,
+                    status: result
+                });
             });
 
     }

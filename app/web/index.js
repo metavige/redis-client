@@ -47,6 +47,15 @@ var express = require('express'),
                 next();
             });
 
+            _app.use(function(req, res, next) {
+                try {
+                    next();
+                } catch (ex) {
+                    // 做 Api 的錯誤處理記錄
+                    _this.agent.emit('error', req, ex);
+                }
+            });
+
             // Add Routes
             addRoute('/ping'); // Simple Ping/Pong, for live check
 
@@ -68,7 +77,8 @@ var express = require('express'),
         this.guardCheck = function(callback, checkFunc, paramData, messageGetter) {
 
             if (checkFunc.call(null, paramData) == true) {
-                var message = _.isFunction(messageGetter) ? messageGetter.call(null,
+                var message = _.isFunction(messageGetter) ? messageGetter.call(
+                    null,
                     paramData) : messageGetter;
 
                 callback(message);

@@ -30,6 +30,9 @@ var path = require('path'),
             delimiter: '::'
         });
 
+        // =======================================================
+        // Fields
+        // =======================================================
         var logger = this.logger = require('./base/logger');
 
         var _config = new Config(this),
@@ -38,14 +41,9 @@ var path = require('path'),
             _containerProxy = new ContainerProxy(this);
 
         // =======================================================
-        // Internal Methods
-        // =======================================================
-
-        // =======================================================
         // Public Methods
         // =======================================================
         this.init = function() {
-
             // 初始化 config
             _config.init();
 
@@ -57,12 +55,31 @@ var path = require('path'),
             return _config.isProxy();
         };
 
+        this.getId = function() {
+            return _config.getContainerId();
+        };
+
+        this.getContainerApi = function(apiUrl) {
+            return _config.getContainerApi(apiUrl);
+        };
+
         // =======================================================
         // Events
         // =======================================================
         this.on('error', function() {
-            this.logger.error.call(this, '[ERROR]', arguments);
+            var args = _.map(arguments);
+            args.unshift('[ERROR]');
+
+            logger.error.apply(logger, args);
             // TODO: 錯誤處理～
+        });
+
+        this.on('fatal', function() {
+            var args = _.map(arguments);
+            args.unshift('[ERROR]');
+            logger.error.apply(logger, args);
+
+            process.exit(1);
         });
 
         // this.on('redis::instance.create', function() {
@@ -78,7 +95,7 @@ var path = require('path'),
             //     this.event,
             //     args);
             args.unshift(this.event.replace('redis::', ''));
-            console.log('[ARGS]', args);
+            console.log('[REDIS][MANAGER]', args);
 
             _manager.emit.apply(_manager, args);
             // delegate _apdater emit

@@ -86,10 +86,11 @@ var util = require('util'),
                 logger.info('call containerApi to update sentinel status', result);
                 // Call Sentine Api report status
                 // containerApi.updateSentinelStatus(resId, procId, result);
-                _self.manager.callContainerApi('sentinel.updateStatus',
-                    resId, procId, result);
-
-                callback(null, result);
+                _self.manager.api('sentinel.statusUpdate', {
+                    resId: resId,
+                    id: procId,
+                    status: result
+                }, callback);
             }
         ]);
     }
