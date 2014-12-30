@@ -13,8 +13,16 @@ var winston = require('winston');
 
     var _logger = new(winston.Logger)({
         transports: [
+            new(winston.transports.File)({
+                filename: 'test/test_spec.log',
+                level: 'debug',
+                // prettyPrint: true,
+                maxsize: (1024 * 1024),
+                maxFiles: 5,
+                json: false
+            }),
             new(winston.transports.Console)({
-                level: 'debug'
+                level: 'info'
             })
         ]
     });

@@ -55,7 +55,7 @@ var BaseCommand = require('./baseCommand'),
                     containerInfo = {
                         id: resBody.containerId,
                         type: resBody.containerType,
-                        processes = resBody.processes
+                        processes: resBody.processes
                     };
 
                 // if this container is proxy, need set sentinel port, auth

@@ -11,6 +11,7 @@
 // =======================================================
 var util = require('util'),
     async = require('async'),
+    redisInfo = require('redis-info'),
     _ = require("underscore");
 
 (function() {
@@ -33,7 +34,7 @@ var util = require('util'),
             mem: 'allocate memory size'
         }
         */
-        console.log(options);
+        logger.debug(options);
 
         // command: redis-server --port 123 --maxmemory 128mb --requirepass 123 --daemonize yes
 
@@ -54,11 +55,14 @@ var util = require('util'),
                 // 呼叫命令列，建立一個新的 redis-server instance
                 _self.manager.spawnCommand('redis-server', cmdArgs,
                     function(code, result) {
-                        if (code === 0) {
+                        logger.debug('spawnCommand callback:', arguments);
+                        if (code == 0) {
                             logger.info('create redis server success !!!');
                         }
 
-                        callback((code === 0) ? null : result);
+                        var error = ((code == 0) ? null : code);
+                        // logger.debug('error', error);
+                        callback(error, result);
                     });
             },
             function(callback) {
@@ -69,10 +73,10 @@ var util = require('util'),
                     var sendData = {
                         id: options.id
                     };
-                    if (error === null) {
+                    if (error == null) {
                         var redisInfoData = redisInfo.parse(result.out);
-                        logger.debug('parse redisInfo: ', JSON.stringify(
-                            redisInfoData));
+                        // logger.debug('parse redisInfo: ', JSON.stringify(
+                        //     redisInfoData));
 
                         sendData = _.extend(sendData, {
                             info: redisInfoData

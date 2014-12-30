@@ -49,10 +49,13 @@ var util = require('util'),
 
                 cmd.handle.apply(cmd, [data, cb]);
             } catch (ex) {
-                console.log(ex);
+                console.log('RunCommand Error', cmdName, ex);
                 // error raise
                 args.unshift('error');
+
                 agent.emit.apply(agent, args);
+
+                cb(ex);
             }
         });
 

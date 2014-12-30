@@ -60,9 +60,9 @@ gulp.task('bundle-js', function() {
 gulp.task('watch', function() {
     // console.log( 'watch 跑' );
 
-    gulp.watch(paths.src, ['clean', 'bundle-js']);
+    // gulp.watch(paths.src, ['clean', 'bundle-js']);
 
-    //gulp.watch(['test/**', 'app/lib/**'], ['test']);
+    gulp.watch(['test/**', 'app/**'], ['test']);
 });
 
 // /**
@@ -84,7 +84,9 @@ gulp.task('clean', function() {
 
 gulp.task('test', function() {
     return gulp.src([paths.testScrips])
-        .pipe(mocha())
+        .pipe(mocha({
+            reporter: 'spec'
+        }))
         .on('error', function(err) {
             console.log('======');
             console.log('[測試錯誤]', err);
@@ -103,7 +105,8 @@ gulp.task('default', ['dev']);
 /**
  * 廣播 livereload 事件
  */
-gulp.task('dev', ['clean', 'bundle-js', 'watch']);
+//gulp.task('dev', ['clean', 'bundle-js', 'watch']);
+gulp.task('dev', ['watch', 'test']);
 //
 //gulp.task('default', function () {
 //    //     return gulp.src('test/**/*.js', {

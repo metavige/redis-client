@@ -1,0 +1,321 @@
+2014-12-30T10:29:03.981Z - debug: test data: id=ABC, port=123, mem=100, pwd=123
+2014-12-30T10:29:03.982Z - debug:  id=ABC, port=123, mem=100, pwd=123
+2014-12-30T10:29:03.982Z - debug: cmdArgs:  0=--port, 1=123, 2=--maxmemory, 3=100mb, 4=--requirepass, 5=123, 6=--daemonize, 7=yes, 8=--pidfile, 9=/var/run/redis/redis-server-ABC.pid, 10=--logfile, 11=/var/log/redis/redis-ABC.log, 12=--dir, 13=/var/lib/redis, 14=--dbfilename, 15=ABC.rdb
+2014-12-30T10:29:03.983Z - debug: spawnCommand callback: 0=null
+2014-12-30T10:29:03.983Z - debug: update redis info status
+2014-12-30T10:29:03.983Z - debug: call redisCli: 0=function (error, result) {
+                    var sendData = {
+                        id: options.id
+                    };
+                    if (error == null) {
+                        var redisInfoData = redisInfo.parse(result.out);
+                        // logger.debug('parse redisInfo: ', JSON.stringify(
+                        //     redisInfoData));
+
+                        sendData = _.extend(sendData, {
+                            info: redisInfoData
+                        });
+                    } else {
+                        sendData = _.extend(sendData, {
+                            error: result.err
+                        });
+                    }
+                    // containerApi.sendRedisInfo(sendData);
+
+                    // 建立完成之後，呼叫 Api 回寫狀態
+                    _manager.api('instance.created', sendData, callback);
+
+                    callback(error);
+                }, 1=123, 2=123, 3=[info]
+2014-12-30T10:29:03.987Z - debug: test data: id=ABC, port=123, mem=100, pwd=123
+2014-12-30T10:29:03.987Z - debug:  id=ABC, port=123, mem=100, pwd=123
+2014-12-30T10:29:03.987Z - debug: cmdArgs:  0=--port, 1=123, 2=--maxmemory, 3=100mb, 4=--requirepass, 5=123, 6=--daemonize, 7=yes, 8=--pidfile, 9=/var/run/redis/redis-server-ABC.pid, 10=--logfile, 11=/var/log/redis/redis-ABC.log, 12=--dir, 13=/var/lib/redis, 14=--dbfilename, 15=ABC.rdb
+2014-12-30T10:29:03.987Z - debug: spawnCommand callback: 0=-1
+2014-12-30T10:29:03.988Z - debug: call restart handle error: -1
+2014-12-30T10:29:03.990Z - debug: test data: id=ABC, port=123, mem=100, pwd=123, isMaster=true
+2014-12-30T10:29:03.990Z - debug: call restart redis id=ABC, port=123, mem=100, pwd=123, isMaster=true
+2014-12-30T10:29:03.990Z - debug:  id=ABC, port=123, mem=100, pwd=123, isMaster=true
+2014-12-30T10:29:03.990Z - debug: cmdArgs:  0=--port, 1=123, 2=--maxmemory, 3=100mb, 4=--requirepass, 5=123, 6=--daemonize, 7=yes, 8=--pidfile, 9=/var/run/redis/redis-server-ABC.pid, 10=--logfile, 11=/var/log/redis/redis-ABC.log, 12=--dir, 13=/var/lib/redis, 14=--dbfilename, 15=ABC.rdb
+2014-12-30T10:29:03.990Z - debug: spawnCommand callback: 0=null
+2014-12-30T10:29:03.990Z - debug: update redis info status
+2014-12-30T10:29:03.990Z - debug: call redisCli: 0=function (error, result) {
+                    var sendData = {
+                        id: options.id
+                    };
+                    if (error == null) {
+                        var redisInfoData = redisInfo.parse(result.out);
+                        // logger.debug('parse redisInfo: ', JSON.stringify(
+                        //     redisInfoData));
+
+                        sendData = _.extend(sendData, {
+                            info: redisInfoData
+                        });
+                    } else {
+                        sendData = _.extend(sendData, {
+                            error: result.err
+                        });
+                    }
+                    // containerApi.sendRedisInfo(sendData);
+
+                    // 建立完成之後，呼叫 Api 回寫狀態
+                    _manager.api('instance.created', sendData, callback);
+
+                    callback(error);
+                }, 1=123, 2=123, 3=[info]
+2014-12-30T10:29:03.991Z - info: restart redis ok!
+2014-12-30T10:29:03.992Z - info: restart redis ok!
+2014-12-30T10:29:03.993Z - debug: test data: id=ABC, port=123, mem=100, pwd=123, isMaster=false
+2014-12-30T10:29:03.993Z - debug: call restart redis id=ABC, port=123, mem=100, pwd=123, isMaster=false
+2014-12-30T10:29:03.993Z - debug:  id=ABC, port=123, mem=100, pwd=123, isMaster=false
+2014-12-30T10:29:03.993Z - debug: cmdArgs:  0=--port, 1=123, 2=--maxmemory, 3=100mb, 4=--requirepass, 5=123, 6=--daemonize, 7=yes, 8=--pidfile, 9=/var/run/redis/redis-server-ABC.pid, 10=--logfile, 11=/var/log/redis/redis-ABC.log, 12=--dir, 13=/var/lib/redis, 14=--dbfilename, 15=ABC.rdb
+2014-12-30T10:29:03.993Z - debug: spawnCommand callback: 0=null
+2014-12-30T10:29:03.993Z - debug: update redis info status
+2014-12-30T10:29:03.993Z - debug: call redisCli: 0=function (error, result) {
+                    var sendData = {
+                        id: options.id
+                    };
+                    if (error == null) {
+                        var redisInfoData = redisInfo.parse(result.out);
+                        // logger.debug('parse redisInfo: ', JSON.stringify(
+                        //     redisInfoData));
+
+                        sendData = _.extend(sendData, {
+                            info: redisInfoData
+                        });
+                    } else {
+                        sendData = _.extend(sendData, {
+                            error: result.err
+                        });
+                    }
+                    // containerApi.sendRedisInfo(sendData);
+
+                    // 建立完成之後，呼叫 Api 回寫狀態
+                    _manager.api('instance.created', sendData, callback);
+
+                    callback(error);
+                }, 1=123, 2=123, 3=[info]
+2014-12-30T10:29:03.994Z - debug: call config set MASTERAUTH
+2014-12-30T10:29:03.994Z - debug: call redisCli: 0=function (err) {
+                        var args = Array.prototype.slice.call(arguments, 1);
+                        if (args.length <= 1) {
+                            args = args[0];
+                        }
+                        callback.call(null, err, args);
+                    }, 1=123, 2=123, 3=[config, set, MASTERAUTH, 123]
+2014-12-30T10:29:03.996Z - debug: do config set.....
+2014-12-30T10:29:03.997Z - info: restart redis ok!
+2014-12-30T10:29:03.997Z - info: restart redis ok!
+2014-12-30T10:29:04.574Z - debug: test data: id=ABC, port=123, mem=100, pwd=123
+2014-12-30T10:29:04.574Z - debug:  id=ABC, port=123, mem=100, pwd=123
+2014-12-30T10:29:04.574Z - debug: cmdArgs:  0=--port, 1=123, 2=--maxmemory, 3=100mb, 4=--requirepass, 5=123, 6=--daemonize, 7=yes, 8=--pidfile, 9=/var/run/redis/redis-server-ABC.pid, 10=--logfile, 11=/var/log/redis/redis-ABC.log, 12=--dir, 13=/var/lib/redis, 14=--dbfilename, 15=ABC.rdb
+2014-12-30T10:29:04.575Z - debug: spawnCommand callback: 0=null
+2014-12-30T10:29:04.575Z - debug: update redis info status
+2014-12-30T10:29:04.575Z - debug: call redisCli: 0=function (error, result) {
+                    var sendData = {
+                        id: options.id
+                    };
+                    if (error == null) {
+                        var redisInfoData = redisInfo.parse(result.out);
+                        // logger.debug('parse redisInfo: ', JSON.stringify(
+                        //     redisInfoData));
+
+                        sendData = _.extend(sendData, {
+                            info: redisInfoData
+                        });
+                    } else {
+                        sendData = _.extend(sendData, {
+                            error: result.err
+                        });
+                    }
+                    // containerApi.sendRedisInfo(sendData);
+
+                    // 建立完成之後，呼叫 Api 回寫狀態
+                    _manager.api('instance.created', sendData, callback);
+
+                    callback(error);
+                }, 1=123, 2=123, 3=[info]
+2014-12-30T10:29:04.578Z - debug: test data: id=ABC, port=123, mem=100, pwd=123
+2014-12-30T10:29:04.578Z - debug:  id=ABC, port=123, mem=100, pwd=123
+2014-12-30T10:29:04.578Z - debug: cmdArgs:  0=--port, 1=123, 2=--maxmemory, 3=100mb, 4=--requirepass, 5=123, 6=--daemonize, 7=yes, 8=--pidfile, 9=/var/run/redis/redis-server-ABC.pid, 10=--logfile, 11=/var/log/redis/redis-ABC.log, 12=--dir, 13=/var/lib/redis, 14=--dbfilename, 15=ABC.rdb
+2014-12-30T10:29:04.578Z - debug: spawnCommand callback: 0=-1
+2014-12-30T10:29:04.579Z - debug: call restart handle error: -1
+2014-12-30T10:29:04.579Z - debug: test data: id=ABC, port=123, mem=100, pwd=123, isMaster=true
+2014-12-30T10:29:04.579Z - debug: call restart redis id=ABC, port=123, mem=100, pwd=123, isMaster=true
+2014-12-30T10:29:04.580Z - debug:  id=ABC, port=123, mem=100, pwd=123, isMaster=true
+2014-12-30T10:29:04.580Z - debug: cmdArgs:  0=--port, 1=123, 2=--maxmemory, 3=100mb, 4=--requirepass, 5=123, 6=--daemonize, 7=yes, 8=--pidfile, 9=/var/run/redis/redis-server-ABC.pid, 10=--logfile, 11=/var/log/redis/redis-ABC.log, 12=--dir, 13=/var/lib/redis, 14=--dbfilename, 15=ABC.rdb
+2014-12-30T10:29:04.580Z - debug: spawnCommand callback: 0=null
+2014-12-30T10:29:04.580Z - debug: update redis info status
+2014-12-30T10:29:04.580Z - debug: call redisCli: 0=function (error, result) {
+                    var sendData = {
+                        id: options.id
+                    };
+                    if (error == null) {
+                        var redisInfoData = redisInfo.parse(result.out);
+                        // logger.debug('parse redisInfo: ', JSON.stringify(
+                        //     redisInfoData));
+
+                        sendData = _.extend(sendData, {
+                            info: redisInfoData
+                        });
+                    } else {
+                        sendData = _.extend(sendData, {
+                            error: result.err
+                        });
+                    }
+                    // containerApi.sendRedisInfo(sendData);
+
+                    // 建立完成之後，呼叫 Api 回寫狀態
+                    _manager.api('instance.created', sendData, callback);
+
+                    callback(error);
+                }, 1=123, 2=123, 3=[info]
+2014-12-30T10:29:04.581Z - info: restart redis ok!
+2014-12-30T10:29:04.581Z - info: restart redis ok!
+2014-12-30T10:29:04.582Z - debug: test data: id=ABC, port=123, mem=100, pwd=123, isMaster=false
+2014-12-30T10:29:04.582Z - debug: call restart redis id=ABC, port=123, mem=100, pwd=123, isMaster=false
+2014-12-30T10:29:04.582Z - debug:  id=ABC, port=123, mem=100, pwd=123, isMaster=false
+2014-12-30T10:29:04.582Z - debug: cmdArgs:  0=--port, 1=123, 2=--maxmemory, 3=100mb, 4=--requirepass, 5=123, 6=--daemonize, 7=yes, 8=--pidfile, 9=/var/run/redis/redis-server-ABC.pid, 10=--logfile, 11=/var/log/redis/redis-ABC.log, 12=--dir, 13=/var/lib/redis, 14=--dbfilename, 15=ABC.rdb
+2014-12-30T10:29:04.582Z - debug: spawnCommand callback: 0=null
+2014-12-30T10:29:04.582Z - debug: update redis info status
+2014-12-30T10:29:04.582Z - debug: call redisCli: 0=function (error, result) {
+                    var sendData = {
+                        id: options.id
+                    };
+                    if (error == null) {
+                        var redisInfoData = redisInfo.parse(result.out);
+                        // logger.debug('parse redisInfo: ', JSON.stringify(
+                        //     redisInfoData));
+
+                        sendData = _.extend(sendData, {
+                            info: redisInfoData
+                        });
+                    } else {
+                        sendData = _.extend(sendData, {
+                            error: result.err
+                        });
+                    }
+                    // containerApi.sendRedisInfo(sendData);
+
+                    // 建立完成之後，呼叫 Api 回寫狀態
+                    _manager.api('instance.created', sendData, callback);
+
+                    callback(error);
+                }, 1=123, 2=123, 3=[info]
+2014-12-30T10:29:04.583Z - debug: call config set MASTERAUTH
+2014-12-30T10:29:04.583Z - debug: call redisCli: 0=function (err) {
+                        var args = Array.prototype.slice.call(arguments, 1);
+                        if (args.length <= 1) {
+                            args = args[0];
+                        }
+                        callback.call(null, err, args);
+                    }, 1=123, 2=123, 3=[config, set, MASTERAUTH, 123]
+2014-12-30T10:29:04.586Z - debug: do config set.....
+2014-12-30T10:29:04.586Z - info: restart redis ok!
+2014-12-30T10:29:04.586Z - info: restart redis ok!
+2014-12-30T10:29:04.654Z - debug: test data: id=ABC, port=123, mem=100, pwd=123
+2014-12-30T10:29:04.654Z - debug:  id=ABC, port=123, mem=100, pwd=123
+2014-12-30T10:29:04.654Z - debug: cmdArgs:  0=--port, 1=123, 2=--maxmemory, 3=100mb, 4=--requirepass, 5=123, 6=--daemonize, 7=yes, 8=--pidfile, 9=/var/run/redis/redis-server-ABC.pid, 10=--logfile, 11=/var/log/redis/redis-ABC.log, 12=--dir, 13=/var/lib/redis, 14=--dbfilename, 15=ABC.rdb
+2014-12-30T10:29:04.656Z - debug: spawnCommand callback: 0=null
+2014-12-30T10:29:04.656Z - debug: update redis info status
+2014-12-30T10:29:04.656Z - debug: call redisCli: 0=function (error, result) {
+                    var sendData = {
+                        id: options.id
+                    };
+                    if (error == null) {
+                        var redisInfoData = redisInfo.parse(result.out);
+                        // logger.debug('parse redisInfo: ', JSON.stringify(
+                        //     redisInfoData));
+
+                        sendData = _.extend(sendData, {
+                            info: redisInfoData
+                        });
+                    } else {
+                        sendData = _.extend(sendData, {
+                            error: result.err
+                        });
+                    }
+                    // containerApi.sendRedisInfo(sendData);
+
+                    // 建立完成之後，呼叫 Api 回寫狀態
+                    _manager.api('instance.created', sendData, callback);
+
+                    callback(error);
+                }, 1=123, 2=123, 3=[info]
+2014-12-30T10:29:04.659Z - debug: test data: id=ABC, port=123, mem=100, pwd=123
+2014-12-30T10:29:04.659Z - debug:  id=ABC, port=123, mem=100, pwd=123
+2014-12-30T10:29:04.659Z - debug: cmdArgs:  0=--port, 1=123, 2=--maxmemory, 3=100mb, 4=--requirepass, 5=123, 6=--daemonize, 7=yes, 8=--pidfile, 9=/var/run/redis/redis-server-ABC.pid, 10=--logfile, 11=/var/log/redis/redis-ABC.log, 12=--dir, 13=/var/lib/redis, 14=--dbfilename, 15=ABC.rdb
+2014-12-30T10:29:04.659Z - debug: spawnCommand callback: 0=-1
+2014-12-30T10:29:04.660Z - debug: call restart handle error: -1
+2014-12-30T10:29:04.661Z - debug: test data: id=ABC, port=123, mem=100, pwd=123, isMaster=true
+2014-12-30T10:29:04.661Z - debug: call restart redis id=ABC, port=123, mem=100, pwd=123, isMaster=true
+2014-12-30T10:29:04.661Z - debug:  id=ABC, port=123, mem=100, pwd=123, isMaster=true
+2014-12-30T10:29:04.661Z - debug: cmdArgs:  0=--port, 1=123, 2=--maxmemory, 3=100mb, 4=--requirepass, 5=123, 6=--daemonize, 7=yes, 8=--pidfile, 9=/var/run/redis/redis-server-ABC.pid, 10=--logfile, 11=/var/log/redis/redis-ABC.log, 12=--dir, 13=/var/lib/redis, 14=--dbfilename, 15=ABC.rdb
+2014-12-30T10:29:04.661Z - debug: spawnCommand callback: 0=null
+2014-12-30T10:29:04.661Z - debug: update redis info status
+2014-12-30T10:29:04.661Z - debug: call redisCli: 0=function (error, result) {
+                    var sendData = {
+                        id: options.id
+                    };
+                    if (error == null) {
+                        var redisInfoData = redisInfo.parse(result.out);
+                        // logger.debug('parse redisInfo: ', JSON.stringify(
+                        //     redisInfoData));
+
+                        sendData = _.extend(sendData, {
+                            info: redisInfoData
+                        });
+                    } else {
+                        sendData = _.extend(sendData, {
+                            error: result.err
+                        });
+                    }
+                    // containerApi.sendRedisInfo(sendData);
+
+                    // 建立完成之後，呼叫 Api 回寫狀態
+                    _manager.api('instance.created', sendData, callback);
+
+                    callback(error);
+                }, 1=123, 2=123, 3=[info]
+2014-12-30T10:29:04.663Z - info: restart redis ok!
+2014-12-30T10:29:04.663Z - info: restart redis ok!
+2014-12-30T10:29:04.664Z - debug: test data: id=ABC, port=123, mem=100, pwd=123, isMaster=false
+2014-12-30T10:29:04.664Z - debug: call restart redis id=ABC, port=123, mem=100, pwd=123, isMaster=false
+2014-12-30T10:29:04.664Z - debug:  id=ABC, port=123, mem=100, pwd=123, isMaster=false
+2014-12-30T10:29:04.664Z - debug: cmdArgs:  0=--port, 1=123, 2=--maxmemory, 3=100mb, 4=--requirepass, 5=123, 6=--daemonize, 7=yes, 8=--pidfile, 9=/var/run/redis/redis-server-ABC.pid, 10=--logfile, 11=/var/log/redis/redis-ABC.log, 12=--dir, 13=/var/lib/redis, 14=--dbfilename, 15=ABC.rdb
+2014-12-30T10:29:04.664Z - debug: spawnCommand callback: 0=null
+2014-12-30T10:29:04.664Z - debug: update redis info status
+2014-12-30T10:29:04.664Z - debug: call redisCli: 0=function (error, result) {
+                    var sendData = {
+                        id: options.id
+                    };
+                    if (error == null) {
+                        var redisInfoData = redisInfo.parse(result.out);
+                        // logger.debug('parse redisInfo: ', JSON.stringify(
+                        //     redisInfoData));
+
+                        sendData = _.extend(sendData, {
+                            info: redisInfoData
+                        });
+                    } else {
+                        sendData = _.extend(sendData, {
+                            error: result.err
+                        });
+                    }
+                    // containerApi.sendRedisInfo(sendData);
+
+                    // 建立完成之後，呼叫 Api 回寫狀態
+                    _manager.api('instance.created', sendData, callback);
+
+                    callback(error);
+                }, 1=123, 2=123, 3=[info]
+2014-12-30T10:29:04.666Z - debug: call config set MASTERAUTH
+2014-12-30T10:29:04.666Z - debug: call redisCli: 0=function (err) {
+                        var args = Array.prototype.slice.call(arguments, 1);
+                        if (args.length <= 1) {
+                            args = args[0];
+                        }
+                        callback.call(null, err, args);
+                    }, 1=123, 2=123, 3=[config, set, MASTERAUTH, 123]
+2014-12-30T10:29:04.668Z - debug: do config set.....
+2014-12-30T10:29:04.668Z - info: restart redis ok!
+2014-12-30T10:29:04.669Z - info: restart redis ok!

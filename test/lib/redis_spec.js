@@ -1,10 +1,10 @@
-var expect = require('expect.js');
-var exec = require('child_process').exec;
-var redisAdapter = require(__dirname + '/../../app/lib/redis');
+// var expect = require('expect.js');
+// var exec = require('child_process').exec;
+// var redisAdapter = require(__dirname + '/../../app/lib/redis');
 
 xdescribe('Redis Adapter', function() {
 
-    
+
 
     // /**
     //  * 測試 init config

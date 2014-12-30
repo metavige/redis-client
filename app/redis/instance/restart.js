@@ -10,9 +10,11 @@
 // =======================================================
 // Module dependencies
 // =======================================================
-var RedisCreateCommand = require('./create'),
-    util = require('util'),
-    _ = require('underscore');
+var util = require('util'),
+    async = require('async'),
+    _ = require('underscore'),
+    path = require('path'),
+    RedisCreateCommand = require(path.join(__dirname, './create'));
 
 (function() {
 
@@ -22,17 +24,28 @@ var RedisCreateCommand = require('./create'),
 
     util.inherits(RedisRestartCommand, RedisCreateCommand)
 
+    /**
+     * 重新啟動 Redis 的 Command 執行命令
+     * @param  {[type]}   options [description]
+     * @param  {Function} cb      callback 方法。測試用
+     * @return {[type]}           [description]
+     */
+    RedisRestartCommand.prototype.handle = function(options, cb) {
 
-    RedisRestartCommand.prototype.handle = function(options) {
+        var _self = this,
+            logger = this.manager.logger;
+        // logger.debug('manager:', this.manager);
 
-        console.log('call restart redis', options);
-
-        var _self = this;
+        logger.debug('call restart redis', options);
 
         // 先加入第一個步驟，建立一個新的 Redis
         var asyncSeries = [
-            function(cb) {
-                RedisRestartCommand.super_.handle.apply(this, options, cb);
+            function(callback) {
+                //logger.debug('super:', RedisRestartCommand.super_);
+                RedisCreateCommand.prototype.handle.call(
+                    _self,
+                    options,
+                    callback);
             }
         ];
 
@@ -42,21 +55,39 @@ var RedisCreateCommand = require('./create'),
             var cmdArgs = ['config', 'set', 'MASTERAUTH', options.pwd];
 
             // 再加入設定 MASTERAUTH 的步驟
-            asyncSeries.push(function(cb) {
-                _self.manager.redisCli(cb, options.port, options.pwd, cmdArgs);
+            asyncSeries.push(function(callback) {
+                logger.debug('call config set MASTERAUTH');
+                _self.manager.redisCli(callback, options.port, options.pwd, cmdArgs);
             });
         }
 
         // 執行步驟
         async.series(asyncSeries,
             function(err, result) {
+
                 if (err != null) {
                     // print error
                     _self.manager.emit('error', 'RedisRestartCommand', err);
-                    return;
+                } else {
+                    logger.info('restart redis ok!');
                 }
-                logger.info('restart redis ok!');
+                // logger.debug('cbCall', err, result);
+                // logger.debug('err', err);
+                // logger.debug('result', result);
+                cbCall(err, result);
             });
+
+        /**
+         * 測試用，簡單的回呼，如果有傳遞進來 cb
+         * @param {[type]} err    [description]
+         * @param {[type]} result [description]
+         */
+        function cbCall(err, result) {
+
+            if (cb != null) {
+                cb(err, result);
+            }
+        }
     };
 
     module.exports = RedisRestartCommand;
