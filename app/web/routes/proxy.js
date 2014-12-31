@@ -59,7 +59,7 @@ var router = require('express').Router();
                 }
 
                 // trigger agent to create proxy
-                webApp.emit('container::proxy.create',
+                webApp.emit('redis::proxy.create',
                     r.resId,
                     r.id,
                     r.port,

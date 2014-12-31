@@ -13,7 +13,7 @@ var path = require('path'),
     // EventEmitter = require('events').EventEmitter,
     Config = require('./base/config'),
     AgentWeb = require('./web/index'),
-    RedisManager = require('./redis/manager'),
+    RedisAdapter = require('./redis/adapter'),
     ContainerProxy = require('./containers/proxy'),
     _ = require('underscore');
 
@@ -37,7 +37,7 @@ var path = require('path'),
 
         var _config = new Config(this),
             _web = new AgentWeb(this),
-            _manager = new RedisManager(this),
+            _adapter = new RedisAdapter(this),
             _containerProxy = new ContainerProxy(this);
 
         // =======================================================
@@ -59,9 +59,14 @@ var path = require('path'),
             return _config.getContainerId();
         };
 
+        this.getSentinelConfig = function() {
+            return _config.getSentinelConfig();
+        };
+
         this.getContainerApi = function(apiUrl) {
             return _config.getContainerApi(apiUrl);
         };
+
 
         // =======================================================
         // Events
@@ -87,6 +92,7 @@ var path = require('path'),
         // });
 
         this.on('redis::*', function() {
+            logger.debug('[REDIS][ADAPTER]', arguments);
 
             var args = _.map(arguments);
             // console.log('trigger redis.* :', arguments);
@@ -95,19 +101,18 @@ var path = require('path'),
             //     this.event,
             //     args);
             args.unshift(this.event.replace('redis::', ''));
-            console.log('[REDIS][MANAGER]', args);
 
-            _manager.emit.apply(_manager, args);
+            _adapter.emit.apply(_adapter, args);
             // delegate _apdater emit
             // _adapter.emit.apply(_adapter, arguments);
         });
 
         this.on('container::*', function() {
+            logger.debug('[AGENT][CONTAINER]', arguments);
             var args = _.map(arguments);
 
             //this.logger.debug('[AGENT] trigger container event: ', this.event);
             args.unshift(this.event.replace('container::', ''));
-            console.log('[AGENT][CONTAINER]', args);
 
             // delegate _containerProxy emit
             _containerProxy.emit.apply(_containerProxy, args);

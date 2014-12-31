@@ -18,7 +18,7 @@ var winston = require('winston');
                 level: 'debug',
                 // prettyPrint: true,
                 maxsize: (1024 * 1024),
-                maxFiles: 5,
+                maxFiles: 1,
                 json: false
             }),
             new(winston.transports.Console)({

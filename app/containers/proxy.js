@@ -47,7 +47,7 @@ var util = require('util'),
                 // Call Command .....
                 var cmd = CreateCommand(cmdName, _self);
 
-                cmd.handle.apply(cmd, [data, cb]);
+                cmd.handle.call(cmd, data, cb);
             } catch (ex) {
                 console.log('RunCommand Error', cmdName, ex);
                 // error raise

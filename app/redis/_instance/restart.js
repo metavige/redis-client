@@ -22,7 +22,7 @@ var util = require('util'),
         RedisRestartCommand.super_.call(this, manager);
     }
 
-    util.inherits(RedisRestartCommand, RedisCreateCommand)
+    util.inherits(RedisRestartCommand, RedisCreateCommand);
 
     /**
      * 重新啟動 Redis 的 Command 執行命令
@@ -39,15 +39,15 @@ var util = require('util'),
         logger.debug('call restart redis', options);
 
         // 先加入第一個步驟，建立一個新的 Redis
-        var asyncSeries = [
-            function(callback) {
+        var asyncSeries = {
+            startInstance: function(callback) {
                 //logger.debug('super:', RedisRestartCommand.super_);
                 RedisCreateCommand.prototype.handle.call(
                     _self,
                     options,
                     callback);
             }
-        ];
+        };
 
         // 如果不是 Master (一般如果重起的話，應該就不是.....不過有可能有時間差～導致還沒回寫 IsMaster)
         if (options.isMaster === false) {
@@ -55,21 +55,22 @@ var util = require('util'),
             var cmdArgs = ['config', 'set', 'MASTERAUTH', options.pwd];
 
             // 再加入設定 MASTERAUTH 的步驟
-            asyncSeries.push(function(callback) {
+            asyncSeries.setMasterAuth = function(callback) {
                 logger.debug('call config set MASTERAUTH');
-                _self.manager.redisCli(callback, options.port, options.pwd, cmdArgs);
-            });
+                _self.manager.redisCli(options.port, options.pwd, cmdArgs, callback);
+            };
         }
 
         // 執行步驟
         async.series(asyncSeries,
             function(err, result) {
+                logger.debug('restart callback:', err, result);
 
                 if (err != null) {
                     // print error
                     _self.manager.emit('error', 'RedisRestartCommand', err);
                 } else {
-                    logger.info('restart redis ok!');
+                    logger.info('重新啟動 Redis 成功!!!');
                 }
                 // logger.debug('cbCall', err, result);
                 // logger.debug('err', err);

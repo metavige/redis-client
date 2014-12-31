@@ -68,6 +68,10 @@ var fs = require('fs'),
             return _.clone(_setttings);
         };
 
+        this.getSentinelConfig = function() {
+            return _.clone(_settings.sentinel);
+        };
+
         this.getContainerApi = function(apiPath) {
             return _settings.apiRoot + apiPath;
         };

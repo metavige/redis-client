@@ -34,6 +34,6 @@
     "gulp-notify": "^2.0.1",
     "gulp-rimraf": "^0.1.1",
     "jshint": "^2.5.10",
-    "mocha": "^2.0.1"
+    "mocha": "^2.1.0"
   }
 }

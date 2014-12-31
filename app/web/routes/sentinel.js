@@ -62,7 +62,7 @@ var path = require('path'),
                 }
 
                 // trigger sentinel monitor event
-                webApp.emit('container::sentinel.monitor',
+                webApp.emit('redis::sentinel.monitor',
                     r.name, r.procId, r);
 
                 res.status(200).end();

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+kill $(ps -A -f | grep redis- | grep $1 | awk '{print $2}')

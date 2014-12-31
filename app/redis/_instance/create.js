@@ -11,14 +11,18 @@
 // =======================================================
 var util = require('util'),
     async = require('async'),
+    path = require('path'),
     redisInfo = require('redis-info'),
-    _ = require("underscore");
+    _ = require("underscore"),
+    BaseCliCommand = require(path.join(__dirname, '../baseCliCommand'));
 
 (function() {
 
     function RedisCreateCommand(manager) {
-        this.manager = manager;
+        RedisCreateCommand.super_.call(this, manager);
     }
+
+    util.inherits(RedisCreateCommand, BaseCliCommand);
 
     RedisCreateCommand.prototype.handle = function(options, cb) {
 
@@ -50,51 +54,51 @@ var util = require('util'),
 
         logger.debug('cmdArgs: ', cmdArgs);
 
-        async.series([
-            function(callback) {
+        async.series({
+            newInstance: function(callback) {
                 // 呼叫命令列，建立一個新的 redis-server instance
-                _self.manager.spawnCommand('redis-server', cmdArgs,
-                    function(code, result) {
-                        logger.debug('spawnCommand callback:', arguments);
-                        if (code == 0) {
-                            logger.info('create redis server success !!!');
+                _self.spawnCommand('redis-server', cmdArgs,
+                    function(err) {
+                        if (err == null) {
+                            logger.info('建立一個新的 Redis !!!');
                         }
 
-                        var error = ((code == 0) ? null : code);
+                        // var error = ((code == 0) ? null : code);
                         // logger.debug('error', error);
-                        callback(error, result);
+                        callback(err);
                     });
             },
-            function(callback) {
-                logger.debug('update redis info status');
+            info: function(callback) {
+                logger.debug('取得 Redis info 命令的資料');
 
                 // execute: redis-cli -p [port] -a [pwd] info
-                _self.manager.redisCli(function(error, result) {
-                    var sendData = {
-                        id: options.id
-                    };
-                    if (error == null) {
-                        var redisInfoData = redisInfo.parse(result.out);
-                        // logger.debug('parse redisInfo: ', JSON.stringify(
-                        //     redisInfoData));
+                _self.redisCli(options.port, options.pwd, ['info'],
+                    function(err, result) {
+                        var sendData = {
+                            id: options.id
+                        };
+                        if (err == null) {
+                            var redisInfoData = redisInfo.parse(result.out);
+                            // logger.debug('parse redisInfo: ', JSON.stringify(
+                            //     redisInfoData));
 
-                        sendData = _.extend(sendData, {
-                            info: redisInfoData
-                        });
-                    } else {
-                        sendData = _.extend(sendData, {
-                            error: result.err
-                        });
-                    }
-                    // containerApi.sendRedisInfo(sendData);
+                            sendData = _.extend(sendData, {
+                                info: redisInfoData
+                            });
+                        } else {
+                            sendData = _.extend(sendData, {
+                                error: result.err
+                            });
+                        }
+                        // containerApi.sendRedisInfo(sendData);
 
-                    // 建立完成之後，呼叫 Api 回寫狀態
-                    _manager.api('instance.created', sendData, callback);
-
-                    callback(error);
-                }, options.port, options.pwd, ['info']);
+                        // 建立完成之後，呼叫 Api 回寫狀態
+                        _manager.api('instance.created', sendData, callback);
+                    });
             }
-        ], function(err, result) {
+        }, function(err, result) {
+            logger.debug('create callback:', err, result);
+
             // Report sentinel setting OK!
             if (err != null) {
                 _self.manager.emit('error', 'create redis', result);
