@@ -22,6 +22,7 @@ var util = require('util'),
     // 把常用的 module 放到屬性裡面去
     // =======================================================
     commons._ = _;
+    commons.path = path;
     commons.logger = logger;
     commons.util = util;
 
@@ -33,12 +34,34 @@ var util = require('util'),
         return util.inherits(clazz, superClazz);
     };
 
-    commons.addEventEmitter = function(clazz, options) {
+    commons.extendEventEmitter = function(clazz, options) {
         this.inherits(clazz, EventEmitter);
     };
 
-    commons.addEventEmitter2 = function(clazz, options) {
+    commons.extendEventEmitter2 = function(clazz, options) {
         this.inherits(clazz, EventEmitter2);
     };
+
+    commons.listenerCount = function(emitter, event) {
+        return EventEmitter.listenerCount(emitter, event);
+    };
+
+    commons.getPublicIp = function() {
+        var ni = require('os').networkInterfaces();
+        var eth0Ipv4 = _.filter(ni['eth0'], function(data) {
+            return data.family == 'IPv4'
+        });
+
+        return (eth0Ipv4.length > 0) ? eth0Ipv4[0].address : null;
+    };
+
+    commons.setDefaultOptions = function(originalOptions, defaults) {
+        originalOptions || (originalOptions = {});
+        Object.keys(defaults).forEach(function(def) {
+            if (!originalOptions[def]) originalOptions[def] = defaults[def]
+        });
+
+        return originalOptions;
+    }
 
 })();
