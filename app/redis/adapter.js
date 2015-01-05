@@ -1,5 +1,5 @@
 /**
- * Redis Manager
+ * Redis Adapter
  *
  * 用來管理 Redis/Sentinel/Proxy
  *
@@ -9,11 +9,12 @@
 // =======================================================
 // Module dependencies
 // =======================================================
-var util = require('util'),
+var commons = require('../base/commons'),
+    util = require('util'),
     path = require('path'),
-    EventEmitter2 = require('eventemitter2').EventEmitter2,
-    spawn = require('child_process').spawn,
-    _ = require("underscore");
+    _ = require("underscore"),
+    RedisManager = require('./redisManager'),
+    SentinelManager = require('./sentinelManager');
 
 (function() {
 
@@ -28,122 +29,92 @@ var util = require('util'),
         // =======================================================
         var _agent = agent,
             _self = this,
-            logger = this.logger = agent.logger;
+            logger = this.logger = commons.logger;
+
+        this._redisManagers = {};
+        this._sentinelManagers = new SentinelManager(adapter);
+        this._proxyManagers = {};
 
         // =======================================================
         // Public Methods
         // =======================================================
 
         /**
-         * 利用 child_process.spawn 來執行命令列參數
+         * 提供呼叫 ContainerApi 的方法
          *
-         * @param {String}   command  [description]
-         * @param {Array}    args     [description]
-         * @param {Function} callback [description]
-         */
-        this.spawnCommand = function(command, args, callback) {
-            var child = spawn(command, args);
-            logger.debug('spawn arguments:', args);
-
-            var result = {
-                out: null,
-                err: null,
-                cli: command,
-                args: args
-            };
-
-            child.stdout.on('data', function(data) {
-                result.out = '' + data;
-                // logger.debug('execute process result: ', result.out);
-            });
-
-            child.stderr.on('data', function(data) {
-                result.err = '' + data;
-                logger.error('child process error: ', result.err);
-            });
-
-            child.on('close', function(code) {
-                logger.info('執行 CLI 命令 :' + code);
-                result.code = code;
-
-                // 改變 callback 的回傳資料，改成跟 async 類似的方式
-                // 為了統一所有的 callback 傳遞
-                var err = (code == 0) ? null : code;
-                callback(err, result);
-            });
-        };
-
-        /**
-         * 執行 redis-cli 指令
+         * 為了統一所有觸發 agent 的事件，不需要每個 command 都去做～
          *
-         * @param {Number}   port     [description]
-         * @param {String}   auth     [description]
-         * @param {Array}    params   [description]
-         * @param {Function} callback [description]
+         * @return {[type]} [description]
          */
-        this.redisCli = function(port, auth, params, callback) {
-            var redisCliParams = _.map(params, _.clone);
-            _.each(['-p', port, '-a', auth].reverse(), function(v, k) {
-                redisCliParams.unshift(v);
-            });
-
-            // logger.debug('redis-cli params:', redisCliParams);
-            _self.spawnCommand('redis-cli', redisCliParams, callback);
-            // _self.spawnCommand('redis-cli', redisCliParams, function(err, result) {
-            //
-            //     // var isSuccess = (err == null && /^OK/.test(result.out));
-            //     callback(err, result);
-            // });
-        };
-
-        /**
-         * 執行 sentinel 的相關指令
-         *
-         * @param {Array}    params   [description]
-         * @param {Function} callback [description]
-         */
-        this.sentinelCli = function(params, callback) {
-            var sentinelParams = _.map(params, _.clone);
-            sentinelParams.unshift('sentinel');
-            // logger.debug('sentinel params:', sentinelParams);
-
-            _self.redisCli(callback,
-                config.settings.sentinel.port,
-                config.settings.sentinel.auth,
-                sentinelParams);
-        };
-
-
         this.api = function() {
             var args = _.map(arguments);
             args[0] = 'container::' + args[0];
 
             logger.debug('call container api:', args);
-
             agent.emit.apply(agent, args);
         };
+
+        /**
+         * 檢查 Manager 是否存在～
+         * @param {[type]} type      [description]
+         * @param {[type]} managerId [description]
+         */
+        this.isManagerExist = function(type, managerId) {
+            return this.getManager(type, managerId) != null;
+        }
+
+        /**
+         * 取得 Manager
+         * @param {[type]} type      [description]
+         * @param {[type]} managerId [description]
+         */
+        this.getManager = function(type, managerId) {
+            var managers = this['_' + type + 'Managers'];
+            if (managers[managerId]) {
+                return managers[managerId];
+            }
+            return null;
+        };
+
+        /**
+         * 新增 Manager
+         * @param {[type]} type    [description]
+         * @param {[type]} id      [description]
+         * @param {[type]} manager [description]
+         */
+        this.addManager = function(type, id, manager) {
+            var managers = this['_' + type + 'Managers'];
+            managers[id] = manager;
+
+            return manager;
+        }
 
         // =======================================================
         // Events
         // =======================================================
-        this.onAny(function() {
 
+        this.onAny(function() {
             var args = _.map(arguments);
 
             logger.debug('[MANAGER]', this.event, args);
 
             // 觸發錯誤事件
             if (this.event == 'error') {
-                args.unshift(this.event);
-                agent.emit.apply(agent, args);
+                this._error(args);
+                return;
+            }
+
+            if (this.event == 'close') {
+                this._close();
                 return;
             }
 
             // 事件名稱就是實際的 Command 名稱，
             // 執行 Command Handle
             try {
-                var cmdName = this.event.replace('.', '/');
-                var Command = getCommandClass(cmdName);
+                var cmdName = this.event.replace(/\./g, '/');
+                var Command = this._getCommandClass(cmdName);
+                logger.debug('Get Command Class:', Command);
                 if (Command !== null) {
                     new Command(_self).handle.apply(cmd, args);
                 }
@@ -156,7 +127,7 @@ var util = require('util'),
         // Internal Methods
         // =======================================================
 
-        function getCommandClass(name) {
+        this._getCommandClass = function(name) {
             try {
                 logger.debug('prepare create command:', name);
                 var Command = require(path.join(__dirname, name));
@@ -166,11 +137,28 @@ var util = require('util'),
                 logger.error('Command [' + name + '] 不存在或無法建立！');
                 return null;
             }
-        }
+        };
 
+        this._error = function(args) {
+            args.unshift('error');
+            _self.agent.emit.apply(_self.agent, args);
+        };
+
+        this._close = function() {
+            // 逐一關閉 Manager
+            _.forEach(this._redisManagers, function(v) {
+                v.close();
+            });
+            _.forEach(this._sentinelManagers, function(v) {
+                v.close();
+            });
+            _.forEach(this._proxyManagers, function(v) {
+                v.close();
+            });
+        };
     }
 
-    util.inherits(Adapter, EventEmitter2);
+    commons.extendEventEmitter2(Adapter);
 
     // export adapter
     module.exports = Adapter;

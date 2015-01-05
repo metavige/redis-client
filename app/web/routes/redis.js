@@ -67,8 +67,8 @@ var router = require('express').Router(),
                     }
                     //redisAdapter.newRedis(req.body);
 
-                    // trigger agent to report redis created
-                    webApp.emit('container::instance.create', req.body);
+                    // 觸發事件，準備建立 REDIS
+                    webApp.emit('redis::instance.create', req.body);
 
                     res.status(200).end();
                     // end flow

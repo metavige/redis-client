@@ -22,7 +22,9 @@ var winston = require('winston');
                 json: false
             }),
             new(winston.transports.Console)({
-                level: 'info'
+                level: 'info',
+                timestamp: true,
+                colorize: true
             })
         ]
     });
