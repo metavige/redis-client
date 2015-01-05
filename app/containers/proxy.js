@@ -42,7 +42,7 @@ var util = require('util'),
             }
 
             try {
-                var cmdName = './' + this.event.replace('.', '/');
+                var cmdName = './' + this.event.replace(/\./g, '/');
 
                 // Call Command .....
                 var cmd = CreateCommand(cmdName, _self);
