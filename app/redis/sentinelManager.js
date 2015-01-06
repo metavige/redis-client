@@ -96,13 +96,13 @@ var commons = require('../base/commons'),
     this.on('startContainer', function (container) {
       container.start(function (err) {
         if (err) {
-          logger.error('start sentinel container error!', err);
+          logger.error('[startContainer] 啟動 sentinel container 發生錯誤!', err);
           // TODO: 如果啟動 container 發生錯誤，要通知 ContainerApi
           return;
         }
 
         // 如果 container 確認已經啟動，就觸發事件
-        logger.debug('emit containerReady event');
+        logger.debug('[startContainer] container 已經啟動');
         _self.emit('containerReady');
       });
     });
@@ -114,7 +114,7 @@ var commons = require('../base/commons'),
      * 只需要做 sentinel monitor 就可以
      */
     this.on('containerReady', function () {
-      logger.debug('準備建立 Sentinel Client 來處理 Sentinel 資料');
+      logger.debug('[containerReady] 準備建立 Sentinel Client 來處理 Sentinel 資料');
       this._createSentinelClient();
     });
 
@@ -125,7 +125,7 @@ var commons = require('../base/commons'),
      */
     this.on('monitoring', function () {
       // var so = _sentinelOptions;
-      logger.debug('準備設定更新 sentinel 狀態資料');
+      logger.debug('[monitoring] 準備設定更新 sentinel 狀態資料');
       this._prepareUpdateInfo();
     });
 
@@ -184,7 +184,7 @@ var commons = require('../base/commons'),
         }
 
         if (data.State.Running) {
-          logger.debug('container is ready');
+          logger.debug('[init] container is ready');
           _self.emit('containerReady');
         } else {
           logger.debug('container stop, need start container');
@@ -197,13 +197,13 @@ var commons = require('../base/commons'),
      * 建立 Sentinel Client，用來監聽 Sentinel 狀態變遷
      */
     this._createSentinelClient = function () {
-      logger.debug('prepare create a new sentinelClient');
+      logger.debug('[containerReady] 準備建立一個新的 sentinel client');
       // 設定一個 Sentinel Monitor 的 Client 監聽 Sentinel
       var sc = _self.sentinelClient = RedisSentinel.createClient(_sentinelOptions);
       // logger.debug('建立一個 Sentinel Client', _self.client);
       // 如果設定的 MasterName 已經存在，可以觸發 sentinel connected 事件
       sc.once('sentinel connected', function (hostAndPort) {
-        logger.info('sentinel 連線成功！', hostAndPort);
+        logger.info('[containerReady] sentinel 連線成功！', hostAndPort);
 
         // 如果連線成功，就設定 sentinel client 的事件，監聽 sentinel
         // 主要是 switch master 事件
@@ -219,7 +219,7 @@ var commons = require('../base/commons'),
      */
     this._updateMaster = function (err, data) {
       if (err) {
-        logger.error('updateMaster', err);
+        logger.error('updateMaster:' + err);
 
         // 當發生錯誤，檢查是不是沒有辦法抓到 masterName
         var errStr = err.toString();
@@ -241,7 +241,7 @@ var commons = require('../base/commons'),
       }
 
       var info = this.master.info = ParseSentinelMasterInfo(data);
-      logger.debug('update master info:', info);
+      logger.debug('更新 MasterInfo:', info);
 
       this.emit('masterInfo', info); // 觸發事件，之後可以做 sentinel 監控
     };
@@ -264,6 +264,7 @@ var commons = require('../base/commons'),
      * sentinel monitor 初始化
      */
     function _initMonitor() {
+      logger.debug('[initMonitor] 準備設定 sentinel monitor....')
       var monitorArgs = [],
         mo = _sentinelOptions.masterOptions,
         mn = _sentinelOptions.masterName,
@@ -303,7 +304,7 @@ var commons = require('../base/commons'),
      * @param {[type]} sentinelClient [description]
      */
     function addSentinelEvents(client) {
-      logger.debug('設定 sentinel client 的事件');
+      logger.debug('[containerReady] 設定 sentinel client 的事件');
       // 接聽 master 變更的事件，這是主要用來通知 ContainerApi 的事件
       //
       // 20150106 rickychiang 透過 SentinelClient
@@ -325,8 +326,8 @@ var commons = require('../base/commons'),
 
       // 設定 error 事件
       client.on('error', function (err) {
-        logger.error('sentinel client 發生錯誤', err);
-        // TODO: 如果是其他錯誤，就直接觸發 error 事件後續處理（但是要有人處理）
+        // logger.error('sentinel client 發生錯誤', err);
+        // TODO: 直接觸發 error 事件後續處理（但是要有人處理）
         _self.emit('error', err);
       });
     }

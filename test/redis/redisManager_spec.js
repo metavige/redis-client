@@ -86,6 +86,8 @@ describe('[測試 REDIS Instance]', function () {
 
     it('[產生一個新的 REDIS]', function (done) {
 
+      this.timeout(15000);
+
       redisManager.init({
         id: 'ABC',
         port: port,

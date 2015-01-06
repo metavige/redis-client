@@ -1,5 +1,6 @@
 var testCommon = require('../commons'),
   spawn = require('child_process').spawn,
+  async = require('async'),
   expect = testCommon.expect,
   logger = testCommon.logger,
   DockerUtils = testCommon.getTestClass('redis/dockerUtils'),
@@ -11,7 +12,19 @@ describe('[測試 Sentinel Manager]', function () {
     dockerUtils = new DockerUtils({
       host: 'http://192.168.0.146',
       port: 4243
-    });
+    }),
+    managerOptions = {
+      host: '192.168.0.146',
+      port: 6380,
+      dockerUtils: dockerUtils,
+      masterName: 'TEST',
+      master_auth_pass: '123',
+      masterOptions: {
+        ip: '192.168.0.144',
+        port: 9999,
+        quorum: 1
+      }
+    };
 
   describe('[測試 Docker Container 的狀態]', function () {
 
@@ -92,42 +105,24 @@ describe('[測試 Sentinel Manager]', function () {
     });
   });
 
-  describe('[測試建立 Sentinel Monitor]', function (done) {
-
-    var managerOptions = {
-      host: '192.168.0.146',
-      port: 6380,
-      dockerUtils: dockerUtils,
-      masterName: 'TEST',
-      master_auth_pass: '123',
-      masterOptions: {
-        ip: '192.168.0.144',
-        port: 9999,
-        quorum: 1
-      }
-    };
+  describe('[測試建立 Sentinel Monitor]', function () {
 
     afterEach(function () {
       manager.close();
 
-      var p = spawn('redis-cli', ['-h', '192.168.0.146',
-        '-p', '6380',
-        'sentinel', 'remove', managerOptions.masterName
-      ]);
-      p.stdout.on('data', logger.debug);
-      p.stderr.on('data', logger.error);
-      p.on('close', function (code) {
-        logger.debug('remove monitor code:', code);
-      });
+      // 手動移除測試時建立的 Monitor
+      removeMonitor();
     });
 
-    it('[第一次檢查 MasterName 不存在，應該要設定 monitor]', function () {
+    it('[第一次檢查 MasterName 不存在，應該要設定 monitor]', function (done) {
 
       manager = new SentinelManager(managerOptions);
 
-      manager.on('error', function (err) {
-        // logger.error('執行發生錯誤', err);
-      });
+      manager.init();
+
+      // manager.on('error', function (err) {
+      //   logger.debug('執行間發生的錯誤', err);
+      // });
 
       var _triggerInitMonitor = false;
       manager.on('initMonitor', function () {
@@ -136,12 +131,134 @@ describe('[測試 Sentinel Manager]', function () {
       });
 
       manager.on('masterInfo', function (info) {
+        logger.info('[masterInfo] 取得 masterInfo', JSON.stringify(info));
         expect(info != null).to.be.ok();
-        // expect(_triggerInitMonitor).to.be.ok();
-        logger.info('getMasterInfo! ', info);
+
+        expect(info.name).to.eql(managerOptions.masterName);
+        expect(info.ip).to.eql(managerOptions.masterOptions.ip);
+        expect(info.port).to.eql(managerOptions.masterOptions.port);
+
+        expect(_triggerInitMonitor).to.be.ok();
+        // logger.info('getMasterInfo! ', info);
+        done();
       });
 
-      manager.init();
     });
   })
+
+  describe('[測試連線既存的 Sentinel Master]', function () {
+
+    beforeEach(function () {
+      addNewMonitor();
+      manager = new SentinelManager(managerOptions);
+    });
+
+    afterEach(function () {
+      manager.close();
+      removeMonitor();
+    });
+
+    it('[啟動 Manager, 應該不會進入 initMonitor]', function (done) {
+
+      this.timeout(30000);
+
+      manager.init();
+      manager.on('initMonitor', function () {
+        expect().fail('不應該進入設定 monitor 的事件');
+      });
+
+      manager.on('monitoring', function () {
+        logger.debug('進入到 monitoring 階段');
+      });
+
+      manager.on('masterInfo', function (info) {
+        expect(info.name).to.eql(managerOptions.masterName);
+        expect(info.ip).to.eql(managerOptions.masterOptions.ip);
+        expect(info.port).to.eql(managerOptions.masterOptions.port);
+        done();
+      });
+    });
+
+    // it('[測試事件執行順序: 已經有 monitor 設定的順序]', function () {
+    //   var events = [];
+    //
+    //   // manager.on('initMonitor', function () {
+    //   //   events.push('initMonitor');
+    //   //   logger.info('事件執行順序：', events);
+    //   // });
+    //   // manager.on('containerReady', function () {
+    //   //   events.push('containerReady');
+    //   //   logger.info('事件執行順序：', events);
+    //   // });
+    //   // manager.on('startContainer', function () {
+    //   //   events.push('startContainer');
+    //   //   logger.info('事件執行順序：', events);
+    //   // });
+    //   // manager.on('monitoring', function () {
+    //   //   events.push('monitoring');
+    //   //   // 這應該是最後一個事件
+    //   //   logger.info('事件執行	順序：', events);
+    //   //   //done();
+    //   // });
+    //
+    //   manager.init();
+    // });
+  });
+
+
+  function addNewMonitor() {
+    var mo = managerOptions.masterOptions,
+      args1 = ['-h', managerOptions.host,
+        '-p', managerOptions.port,
+        'sentinel', 'monitor', managerOptions.masterName, mo.ip, mo.port, mo.quorum
+      ],
+      args2 = ['-h', managerOptions.host,
+        '-p', managerOptions.port,
+        'sentinel', 'set', managerOptions.masterName, 'auth-pass', managerOptions.master_auth_pass
+      ];
+    // 建立 monitor
+    async.series([
+      function (cb) {
+        execSpawn('redis-cli', args1);
+      },
+      function (cb) {
+        execSpawn('redis-cli', args2);
+      }
+    ], function (err, result) {
+      logger.info('建立 monitor', err, result);
+    });
+
+    // execSpawn('redis-cli', args, function (err) {
+    //   if (err) return logger.error('手動建立 sentinel monitor 錯誤');
+    //
+    //   execSpawn('redis-cli', );
+    // });
+
+  }
+
+  function removeMonitor() {
+    var args = ['-h', managerOptions.host,
+      '-p', managerOptions.port,
+      'sentinel', 'remove', managerOptions.masterName
+    ];
+    execSpawn('redis-cli', args, function (err) {
+      if (err) logger.error('手動刪除 sentinel monitor 錯誤');
+    });
+  }
+
 });
+
+function execSpawn(cmd, args, cb) {
+  var p = spawn(cmd, args);
+  var err = null;
+  p.stdout.on('data', logger.debug);
+  p.stderr.on('data', function (data) {
+    err = data;
+  });
+  p.on('close', function (code) {
+    logger.debug('remove monitor code:', code);
+    if (cb != null) {
+      cb((code != 0) ? err : null);
+    }
+  });
+}
