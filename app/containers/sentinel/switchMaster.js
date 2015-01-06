@@ -10,46 +10,42 @@
 // Module dependencies
 // =======================================================
 var BaseCommand = require('../baseCommand'),
-    util = require('util'),
-    path = require('path'),
-    _ = require('underscore');
+  util = require('util'),
+  path = require('path'),
+  _ = require('underscore');
 
-(function() {
+(function () {
 
-    function SwitchMasterCommand(proxy) {
-        // call super ctor
-        SwitchMasterCommand.super_.call(this, proxy);
-    }
-    util.inherits(SwitchMasterCommand, BaseCommand);
+  function SwitchMasterCommand(proxy) {
+    // call super ctor
+    SwitchMasterCommand.super_.call(this, proxy);
+  }
+  util.inherits(SwitchMasterCommand, BaseCommand);
 
-    /**
-     * 呼叫 Container Api, 更新 Sentinel 狀態
-     *
-     * @param  {Object}   data { id, resId, status }
-     * @param  {Function} cb   callback function
-     */
-    SwitchMasterCommand.prototype.handle = function(data, cb) {
+  /**
+   * 呼叫 Container Api, 更新 Sentinel 狀態
+   *
+   * @param  {Object}   data { id, resId, status }
+   * @param  {Function} cb   callback function
+   */
+  SwitchMasterCommand.prototype.handle = function (data, cb) {
 
-        // 網址組合成 api/containers/{containerId}/sentinel/{processId}
-        var url = path.join('/api/containers',
-            this.proxy.agent.getId(),
-            'sentinel',
-            data.id);
+    // 網址組合成 api/redisInfos/{resId}/switchMaster
+    var url = path.join('/api/redisInfos', data['master-name'], 'switchMaster');
+    logger.debug('switch master url: ', url, data);
 
-        logger.debug('update sentinel status: ', url, data);
+    this.callApi(url, 'POST', data).then(function (res) {
 
-        this.callApi(url, 'PUT', data.status).then(function(res) {
+      var statusCode = res.getCode();
 
-            var statusCode = res.getCode();
+      logger.debug('SwitchMasterCommand', statusCode);
+      if (res.statusCode != 200) {
+        cb('HTTP ' + statusCode, res.getBody());
+      } else {
+        cb(null);
+      }
+    });
+  };
 
-            logger.debug('SetinelStatusUpdatedCommand', statusCode);
-            if (res.statusCode != 200) {
-                cb('HTTP ' + statusCode, res.getBody());
-            } else {
-                cb(null);
-            }
-        });
-    };
-
-    module.exports = SwitchMasterCommand;
+  module.exports = SwitchMasterCommand;
 })();

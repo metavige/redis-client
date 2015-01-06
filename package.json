@@ -19,6 +19,7 @@
     "node-sentinel": "0.0.6",
     "redis": "^0.12.1",
     "redis-info": "^2.0.2",
+    "redis-sentinel-client": "^0.2.5",
     "requestify": "^0.1.16",
     "underscore": "^1.7.0",
     "winston": "^0.8.3"
